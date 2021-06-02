@@ -5,13 +5,6 @@ import pygame_gui
 import time
 from pygame.locals import *
 
-LUNGIME = 600
-INALTIME = 700
-
-MARGINI = 80
-RAZA_CERC = 20
-
-
 class MouseInput:
     '''
     pygame nu contine un feature pentru apasarea/eliberarea mouse-ului
@@ -31,10 +24,8 @@ class MouseInput:
 
         self.apasat = stare_curenta[0]
 
-mouse_input = MouseInput()
 
-
-class Coordonata:
+class NodGraf:
     '''
     retine pozitia unui nod graf (x,y)
     calculeaza pozitia unui nod pe ecranul desenat
@@ -49,10 +40,9 @@ class Coordonata:
         self.punct_desenat = (MARGINI + punct[1] * 70, 2 * MARGINI + punct[0] * 70)
 
 
-
 class TablaDeJoc:
     '''
-    Grafica tabelei de joc
+    Grafica tabelei de joc_pornit
     '''
 
     def __init__(self):
@@ -64,7 +54,7 @@ class TablaDeJoc:
         graful cu usurinta
         '''
 
-        self.noduri = [] # lista de obiecte de tip Coordonata
+        self.noduri = [] # lista de obiecte de tip NodGraf
         self.numar_nod_in_grafic = {} # dictionar de forma: { (x,y): numar nod din grafic }
         self.muchii = {}  # dictionar de forma: { numarul nod in grafic : lista numar nod in grafic } reprezentand muchiile
 
@@ -72,7 +62,7 @@ class TablaDeJoc:
         for i in range(7):
             for j in range(7):
                 if (j>=2 and j<=4) or (i>=2 and i<=4):
-                    numar_nod = Coordonata((i, j))
+                    numar_nod = NodGraf((i, j))
 
                     self.noduri.append(numar_nod)
 
@@ -114,11 +104,10 @@ class TablaDeJoc:
             if c8 in self.numar_nod_in_grafic.keys() and ((i,j) != (2,1))  and ((i,j) != (5,4)):
                 self.muchii[nr].append(self.numar_nod_in_grafic[c8])
 
-
     def desenare_tabla_joc(self, ecran):
 
         '''
-        Functia care deseneaza tabla de joc, luandu-se
+        Functia care deseneaza tabla de joc_pornit, luandu-se
         dupa relatiile dintre muchii si pozitiile nodurilor
         '''
 
@@ -151,7 +140,6 @@ class ConfiguratieJoc:
 
             for i in range(2, 7):
                 for j in range(7):
-                    # if (i, j) != graf_joc.noduri[self.vulpe].punct:
                         if (i==4) or ((i==5 or i==6) and (j>=2 and j<=4)) or ((i==2 or i==3) and (j==0 or j==6)):
                             self.gaste.append(graf_joc.numar_nod_in_grafic[(i, j)])
         else:
@@ -161,8 +149,6 @@ class ConfiguratieJoc:
             self.vulpe = graf_joc.numar_nod_in_grafic[(2, 3)]
         else:
             self.vulpe = vulpe # numarul nodului pe care se afla vulpea
-
-
 
     def gaseste_castigator(self, graf_joc):
 
@@ -185,7 +171,7 @@ class ConfiguratieJoc:
     def afisare_consola(self, graf_joc):
 
         '''
-        Metoda care afiseaza tabla de joc in consola
+        Metoda care afiseaza tabla de joc_pornit in consola
         '''
 
         for x in range(8):
@@ -205,8 +191,6 @@ class ConfiguratieJoc:
                     print("  ", end="")
 
             print("\n", end="")
-
-
 
     def incarcare(self, ecran, graf_joc):
 
@@ -243,7 +227,6 @@ def distanta_Euclid (punct1, punct2) :
     """
     return math.sqrt((punct1[0] - punct2[0]) ** 2 + (punct1[1] - punct2[1]) ** 2)
 
-
 def inlocuire_valoare(vector,valoare_de_inlocuit, valoare_noua):
     '''
     Inlocuiesc o valoare veche cu o valoare noua
@@ -277,7 +260,7 @@ class Jucator:
     def returneaza_nod_apasat(self, graf_joc, punct):
 
         '''
-        functie care primeste graful tablei de joc si pozitia la care s-a dat click pe ecran
+        functie care primeste graful tablei de joc_pornit si pozitia la care s-a dat click pe ecran
         si returneaza nodul pe care s-a dat click (daca s-a dat click pe un nod, altfel returneaza
         -1)
         '''
@@ -308,7 +291,7 @@ class Jucator:
         pass
 
 
-class Gasca(Jucator):
+class Gaste(Jucator):
     '''
     Clasa care mosteneste clasa Jucator, si care va fi mostenita
     de clasele care controleaza gaste.
@@ -452,7 +435,7 @@ class Vulpe(Jucator):
     def configurari_posibile(graf_joc, configuratie_curenta):
 
         '''
-        functie care returneaza toate configuratiile de joc care pot rezulta prin mutarea jaguarului din
+        functie care returneaza toate configuratiile de joc_pornit care pot rezulta prin mutarea jaguarului din
         configuratia curenta.
         Parte din cerinta 5.
         '''
@@ -507,7 +490,7 @@ class Algortimi:
         if este_vulpe:
             configuratii_posibile= Vulpe.configurari_posibile(graf_joc, configuratie_curenta)
         else:
-            configuratii_posibile= Gasca.configurari_posibile(graf_joc, configuratie_curenta)
+            configuratii_posibile= Gaste.configurari_posibile(graf_joc, configuratie_curenta)
 
         algoritmi.numari_mutari = algoritmi.numari_mutari + len(configuratii_posibile)
 
@@ -556,7 +539,7 @@ class Algortimi:
         if este_vulpe:
             configuratii_posibile= Vulpe.configurari_posibile(graf_joc, configuratie_curenta)
         else:
-            configuratii_posibile= Gasca.configurari_posibile(graf_joc, configuratie_curenta)
+            configuratii_posibile= Gaste.configurari_posibile(graf_joc, configuratie_curenta)
 
         algoritmi.numari_mutari = algoritmi.numari_mutari + len(configuratii_posibile)
 
@@ -611,10 +594,7 @@ class Algortimi:
         return (configuratie_curenta, 0)
 
 
-algoritmi = Algortimi()
-
-
-class min_max_gasca(Gasca):
+class MMGaste(Gaste):
     '''
     clasa pentru jucatorul de gaste care foloseste min_max
     '''
@@ -633,13 +613,13 @@ class min_max_gasca(Gasca):
         '''
         algoritmi.numari_mutari = 0
         result = Algortimi.min_max(graf_joc, configuratie_curenta, configuratie_curenta, True, False, 0,
-                                  Algortimi.transformare_in_adancime(self.dificultate), Gasca.estimare)
+                                  Algortimi.transformare_in_adancime(self.dificultate), Gaste.estimare)
         print("Estimare: " + str(result[1]))
         print("Noduri Generate: " + str(algoritmi.numari_mutari))
         return (result[0], algoritmi.numari_mutari)
 
 
-class alpha_beta_gasca(Gasca):
+class ABGaste(Gaste):
     '''
     clasa pentru jucatorul de caini care foloseste alpha-beta
     '''
@@ -658,14 +638,14 @@ class alpha_beta_gasca(Gasca):
         '''
         algoritmi.numari_mutari = 0
         result = Algortimi.alpha_beta(graf_joc, configuratie_curenta, configuratie_curenta, True, False, 0,
-                                    Algortimi.transformare_in_adancime(self.dificultate), Gasca.estimare,
+                                    Algortimi.transformare_in_adancime(self.dificultate), Gaste.estimare,
                                     -sys.maxsize, sys.maxsize)
         print("Estimare: " + str(result[1]))
         print("Noduri Generate: " + str(algoritmi.numari_mutari))
         return (result[0], algoritmi.numari_mutari)
 
 
-class om_gasca(Gasca):
+class OmGaste(Gaste):
     '''
     clasa pentru jucatorul uman care controleaza caini.
     '''
@@ -688,17 +668,17 @@ class om_gasca(Gasca):
         '''
 
         if mouse_input.eliberat:
-            node_ix = self.returneaza_nod_apasat(graf_joc, pygame.mouse.get_pos())
+            index_nod = self.returneaza_nod_apasat(graf_joc, pygame.mouse.get_pos())
 
-            if node_ix != -1:
+            if index_nod != -1:
 
-                if node_ix in configuratie_curenta.gaste:
-                    self.gasca_selectata = node_ix
+                if index_nod in configuratie_curenta.gaste:
+                    self.gasca_selectata = index_nod
                 elif self.gasca_selectata != -1:
-                    if Jucator.mutare_valida(graf_joc, configuratie_curenta, self.gasca_selectata, node_ix):
+                    if Jucator.mutare_valida(graf_joc, configuratie_curenta, self.gasca_selectata, index_nod):
                         configuratie_curenta = ConfiguratieJoc(graf_joc,
                                                                   inlocuire_valoare(configuratie_curenta.gaste, self.gasca_selectata,
-                                                                          node_ix), configuratie_curenta.vulpe)
+                                                                          index_nod), configuratie_curenta.vulpe)
                         self.gasca_selectata = -1
 
         return (configuratie_curenta, 0)
@@ -714,7 +694,7 @@ class om_gasca(Gasca):
             pygame.draw.circle(ecran, (0, 0, 0), graf_joc.noduri[self.gasca_selectata].punct_desenat, RAZA_CERC, 5)
 
 
-class min_max_vulpe(Vulpe):
+class MMVulpe(Vulpe):
     '''
     clasa pentru jucatorul vulpe care foloseste min_max
     '''
@@ -740,7 +720,7 @@ class min_max_vulpe(Vulpe):
         return (result[0], algoritmi.numari_mutari)
 
 
-class alpha_beta_vulpe(Vulpe):
+class ABVulpe(Vulpe):
     '''
     clasa pentru jucatorul vulpe care foloseste alpha-beta
     '''
@@ -767,7 +747,7 @@ class alpha_beta_vulpe(Vulpe):
         return (result[0], algoritmi.numari_mutari)
 
 
-class om_vulpe(Vulpe):
+class OmVulpe(Vulpe):
     '''
     clasa pentru jucatorul uman de vulpe
     '''
@@ -781,22 +761,24 @@ class om_vulpe(Vulpe):
     def muta(self, graf_joc, configuratie_curenta):
 
         '''
-        functie similara cu cea de ka jucatorul uman pentru caini, doar ca aici luam in calcul
-        si daca sunt capturi multiple pe care le face jaguarul. Se fac toate verificarile
+        Metoda prin care jucatorul uman este pentru gaste.
+        Trates si capturile multiple
+        Se fac toate verificarile
         '''
 
         if mouse_input.eliberat:
-            node_ix = self.returneaza_nod_apasat(graf_joc, pygame.mouse.get_pos())
-            if node_ix != -1:
+            index_nod = self.returneaza_nod_apasat(graf_joc, pygame.mouse.get_pos())
+            if index_nod != -1:
                 if len(self.noduri_selectate) == 0:
-                    if Vulpe.verificare_adaugare(self.noduri_selectate, graf_joc, configuratie_curenta, node_ix):
-                        self.noduri_selectate.append(node_ix)
+                    if Vulpe.verificare_adaugare(self.noduri_selectate, graf_joc, configuratie_curenta, index_nod):
+                        self.noduri_selectate.append(index_nod)
+                        
                     elif Jucator.mutare_valida(graf_joc, configuratie_curenta, configuratie_curenta.vulpe,
-                                                node_ix):
-                        configuratie_curenta = ConfiguratieJoc(graf_joc, configuratie_curenta.gaste, node_ix)
+                                                index_nod):
+                        configuratie_curenta = ConfiguratieJoc(graf_joc, configuratie_curenta.gaste, index_nod)
                 else:
-                    if Vulpe.verificare_adaugare(self.noduri_selectate, graf_joc, configuratie_curenta, node_ix):
-                        self.noduri_selectate.append(node_ix)
+                    if Vulpe.verificare_adaugare(self.noduri_selectate, graf_joc, configuratie_curenta, index_nod):
+                        self.noduri_selectate.append(index_nod)
                     else:
                         configuratie_curenta = Vulpe.configuration_after_move(self.noduri_selectate, graf_joc,
                                                                                       configuratie_curenta)
@@ -814,426 +796,449 @@ class om_vulpe(Vulpe):
             pygame.draw.circle(ecran, (0, 255, 0), graf_joc.noduri[node].punct_desenat, RAZA_CERC)
 
 
-class Game:
+class Joc:
     '''
-    clasa care se ocupa de functionarea jocului si
-    a meniului
+    Functionare joc si meniu -> apel catre diverse
     '''
 
-    def meniu(self, UI_manager):
-
-        '''
-        functie care creaza meniul asa cum este specificat in cerinte
-        '''
-
-        jumatate = MARGINI / 2
-        sfert = jumatate / 2
-        jumatate_sfert = sfert / 2
-
-        pozitie_gasca = (MARGINI, MARGINI)
-
-        self.text_gasca = pygame_gui.elements.UILabel(relative_rect=pygame.Rect((pozitie_gasca[0], pozitie_gasca[1]), (110, 25)),
-                                                     text="gaste Jucator", manager=UI_manager)
-
-        pozitie_gasca = (pozitie_gasca[0], pozitie_gasca[1] + sfert + 25)
-
-        self.buton_om_gaste = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((pozitie_gasca[0], pozitie_gasca[1]), (110, 25)),
-            text='HUMAN',
-            manager=UI_manager)
-
-        pozitie_gasca = (pozitie_gasca[0], pozitie_gasca[1] + jumatate_sfert + 25)
-
-        self.buton_min_max_gasca = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((pozitie_gasca[0], pozitie_gasca[1]), (110, 25)),
-            text='min_max',
-            manager=UI_manager)
-
-        pozitie_gasca = (pozitie_gasca[0], pozitie_gasca[1] + jumatate_sfert + 25)
-
-        self.buton_alpha_beta_gasca = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((pozitie_gasca[0], pozitie_gasca[1]), (110, 25)),
-            text='ALPHA-BETA',
-            manager=UI_manager)
-
-        pozitie_gasca = (pozitie_gasca[0], pozitie_gasca[1] + sfert + 25)
-
-        self.text_dificultate_gasca = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((pozitie_gasca[0], pozitie_gasca[1]), (110, 25)), text="dificultate", manager=UI_manager)
-
-        pozitie_gasca = (pozitie_gasca[0], pozitie_gasca[1] + sfert + 25)
-
-        self.dificultate_gaste_1 = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((pozitie_gasca[0], pozitie_gasca[1]), (30, 25)),
-            text='1',
-            manager=UI_manager)
-
-        self.dificultate_gaste_2 = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((pozitie_gasca[0] + 30 + 10, pozitie_gasca[1]), (30, 25)),
-            text='2',
-            manager=UI_manager)
-
-        self.dificultate_gaste_3 = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((pozitie_gasca[0] + 60 + 20, pozitie_gasca[1]), (30, 25)),
-            text='3',
-            manager=UI_manager)
-
-        pozitie_vulpe = (MARGINI + 110 + sfert, MARGINI)
-
-        self.text_vulpe = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((pozitie_vulpe[0], pozitie_vulpe[1]), (110, 25)), text="vulpe Jucator",
-            manager=UI_manager)
-
-        pozitie_vulpe = (pozitie_vulpe[0], pozitie_vulpe[1] + sfert + 25)
-
-        self.buton_om_vulpe = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((pozitie_vulpe[0], pozitie_vulpe[1]), (110, 25)),
-            text='HUMAN',
-            manager=UI_manager)
-
-        pozitie_vulpe = (pozitie_vulpe[0], pozitie_vulpe[1] + jumatate_sfert + 25)
-
-        self.buton_min_max_vulpe = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((pozitie_vulpe[0], pozitie_vulpe[1]), (110, 25)),
-            text='min_max',
-            manager=UI_manager)
-
-        pozitie_vulpe = (pozitie_vulpe[0], pozitie_vulpe[1] + jumatate_sfert + 25)
-
-        self.buton_alpha_beta_vulpe = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((pozitie_vulpe[0], pozitie_vulpe[1]), (110, 25)),
-            text='ALPHA-BETA',
-            manager=UI_manager)
-
-        pozitie_vulpe = (pozitie_vulpe[0], pozitie_vulpe[1] + sfert + 25)
-
-        self.vulpe_dificultate_text = pygame_gui.elements.UILabel(
-            relative_rect=pygame.Rect((pozitie_vulpe[0], pozitie_vulpe[1]), (110, 25)), text="dificultate", manager=UI_manager)
-
-        pozitie_vulpe = (pozitie_vulpe[0], pozitie_vulpe[1] + sfert + 25)
-
-        self.dificultate_vulpe_1 = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((pozitie_vulpe[0], pozitie_vulpe[1]), (30, 25)),
-            text='1',
-            manager=UI_manager)
-
-        self.dificultate_vulpe_2 = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((pozitie_vulpe[0] + 30 + 10, pozitie_vulpe[1]), (30, 25)),
-            text='2',
-            manager=UI_manager)
-
-        self.dificultate_vulpe_3 = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((pozitie_vulpe[0] + 60 + 20, pozitie_vulpe[1]), (30, 25)),
-            text='3',
-            manager=UI_manager)
-
-        pozitie_gasca = (pozitie_gasca[0], pozitie_gasca[1] + sfert + 25)
-
-        self.buton_de_start = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((pozitie_gasca[0], pozitie_gasca[1]), (220 + sfert, 25)),
-            text='PLAY!',
-            manager=UI_manager)
-
-        self.buton_om_gaste.select()
-        self.buton_om_vulpe.select()
-        self.dificultate_gaste_1.select()
-        self.dificultate_vulpe_1.select()
-
-    def __init__(self, UI_manager):
+    def __init__(self, ui_manager):
 
         '''
         pregateste jocul si meniul
         '''
 
-        self.joc = 0
-        self.gaste_tip = 0
-        self.vulpe_tip = 0
-        self.gaste_dificultate = 0
+        self.joc_pornit = 0 # am inceput jocul propriu-zis sau sunt inca in menu
+
+        # cu ce a ales sa joace userul/ userii
+        self.alegere_gaste = "om"
+        self.alegere_vulpe = "om"
+        
+        self.gaste_dificultate = 0 
         self.vulpe_dificultate = 0
 
-        self.font_marime_text = pygame.font.SysFont('Comic Sans MS', 30)
-
-        self.meniu(UI_manager)
-
-    def ui_update(self, eveniment):
+        self.font_marime_text = pygame.font.SysFont('arial.ttf', 60)
+        
+        self.meniu(ui_manager)
+    
+    def meniu(self, ui_manager):
 
         '''
-        functie care verifica butoanele care au fost apasate si
-        actioneaza corespunzator
+        Metoda care creaza butoanele din meniu
+        '''
+
+        # --------------------- Butoane Gaste -------------- #
+        self.text_gasca = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect((110, 130), (200, 40)), # (pozitie fata de marginea din stanga), (dimensiune caseta)
+            text="GASTE",
+            manager=ui_manager)
+
+        self.buton_om_gaste = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((115, 180), (180, 40)),
+            text='OM',
+            manager=ui_manager)
+
+        self.buton_min_max_gasca = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((115, 230), (180, 40)),
+            text='Calculator Min-Max',
+            manager=ui_manager)
+
+        self.buton_alpha_beta_gasca = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((115, 280), (180, 40)),
+            text='Calculator Alpha-Beta',
+            manager=ui_manager)
+
+        self.text_dificultate_gasca = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect((140, 330), (130, 40)),
+            text="Dificultate",
+            manager=ui_manager)
+
+        self.dificultate_gaste_1 = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((140, 380), (130, 40)),
+            text='Usor',
+            manager=ui_manager)
+
+        self.dificultate_gaste_2 = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((140, 430), (130, 40)),
+            text='Mediu',
+            manager=ui_manager)
+
+        self.dificultate_gaste_3 = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((140, 480), (130, 40)),
+            text='Greu',
+            manager=ui_manager)
+
+        # ---------------------Sfarsit Butoane Gaste -------------- #
+
+        # --------------------- Butoane Vulpe -------------- #
+        self.text_vulpe = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect((310, 130), (200, 40)),
+            text="VULPE",
+            manager=ui_manager)
+
+        self.buton_om_vulpe = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((315, 180), (180, 40)),
+            text='OM',
+            manager=ui_manager)
+
+        self.buton_min_max_vulpe = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((315, 230), (180, 40)),
+            text='Calculator Min-Max',
+            manager=ui_manager)
+
+        self.buton_alpha_beta_vulpe = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((315, 280), (180, 40)),
+            text='Calculator Alpha-Beta',
+            manager=ui_manager)
+
+        self.vulpe_dificultate_text = pygame_gui.elements.UILabel(
+            relative_rect=pygame.Rect((340, 330), (130, 40)),
+            text="Dificultate",
+            manager=ui_manager)
+
+        self.dificultate_vulpe_1 = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((340, 380), (130, 40)),
+            text='Usor',
+            manager=ui_manager)
+
+        self.dificultate_vulpe_2 = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((340, 430), (130, 40)),
+            text='Mediu',
+            manager=ui_manager)
+
+        self.dificultate_vulpe_3 = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((340, 480), (130, 40)),
+            text='Greu',
+            manager=ui_manager)
+
+        self.buton_de_start = pygame_gui.elements.UIButton(
+            relative_rect=pygame.Rect((150, 530), (300, 50)),
+            text='JOACA',
+            manager=ui_manager)
+
+        # --------------------- Sfarsit Butoane Vulpe -------------- #
+
+        # selectare by default
+        self.buton_om_gaste.select()
+        self.buton_om_vulpe.select()
+        self.dificultate_gaste_1.select()
+        self.dificultate_vulpe_1.select()
+    
+    def apasare_butoane_meniu(self, eveniment):
+
+        '''
+        Metoda care verifica toate butoanele daca au fost apasate
+        Si actioneaza pe cele selectate
+         
         '''
 
         if eveniment.type == pygame.USEREVENT:
+            
             if eveniment.user_type == pygame_gui.UI_BUTTON_PRESSED:
+                # ------------ Pentru Gaste ----------------------
                 if eveniment.ui_element == self.buton_om_gaste:
-
-                    self.buton_om_gaste.select()
+                    self.buton_om_gaste.select() # selectez
+                    
                     self.buton_min_max_gasca.unselect()
                     self.buton_alpha_beta_gasca.unselect()
-                    self.gaste_tip = 0
+                    
+                    self.alegere_gaste = "om"
 
                 elif eveniment.ui_element == self.buton_min_max_gasca:
+                    self.buton_min_max_gasca.select()
 
                     self.buton_om_gaste.unselect()
-                    self.buton_min_max_gasca.select()
                     self.buton_alpha_beta_gasca.unselect()
-                    self.gaste_tip = 1
+                    
+                    self.alegere_gaste = "mm"
 
                 elif eveniment.ui_element == self.buton_alpha_beta_gasca:
-
+                    self.buton_alpha_beta_gasca.select()
+                    
                     self.buton_om_gaste.unselect()
                     self.buton_min_max_gasca.unselect()
-                    self.buton_alpha_beta_gasca.select()
-                    self.gaste_tip = 2
-
-                elif eveniment.ui_element == self.buton_om_vulpe:
-
-                    self.buton_om_vulpe.select()
-                    self.buton_min_max_vulpe.unselect()
-                    self.buton_alpha_beta_vulpe.unselect()
-                    self.vulpe_tip = 0
-
-                elif eveniment.ui_element == self.buton_min_max_vulpe:
-
-                    self.buton_om_vulpe.unselect()
-                    self.buton_min_max_vulpe.select()
-                    self.buton_alpha_beta_vulpe.unselect()
-                    self.vulpe_tip = 1
-
-                elif eveniment.ui_element == self.buton_alpha_beta_vulpe:
-
-                    self.buton_om_vulpe.unselect()
-                    self.buton_min_max_vulpe.unselect()
-                    self.buton_alpha_beta_vulpe.select()
-                    self.vulpe_tip = 2
-
+                   
+                    self.alegere_gaste = "ab"
+                    
                 elif eveniment.ui_element == self.dificultate_gaste_1:
-
                     self.dificultate_gaste_1.select()
+
                     self.dificultate_gaste_2.unselect()
                     self.dificultate_gaste_3.unselect()
+                    
                     self.gaste_dificultate = 0
 
                 elif eveniment.ui_element == self.dificultate_gaste_2:
-
-                    self.dificultate_gaste_1.unselect()
                     self.dificultate_gaste_2.select()
+                    
+                    self.dificultate_gaste_1.unselect()
                     self.dificultate_gaste_3.unselect()
+                    
                     self.gaste_dificultate = 1
 
                 elif eveniment.ui_element == self.dificultate_gaste_3:
-
+                    self.dificultate_gaste_3.select()
+                    
                     self.dificultate_gaste_1.unselect()
                     self.dificultate_gaste_2.unselect()
-                    self.dificultate_gaste_3.select()
+                  
                     self.gaste_dificultate = 2
 
-                elif eveniment.ui_element == self.dificultate_vulpe_1:
+                # ------------ Pentru Vulpe ----------------------
+                
+                elif eveniment.ui_element == self.buton_om_vulpe:
+                    self.buton_om_vulpe.select()
+                    
+                    self.buton_min_max_vulpe.unselect()
+                    self.buton_alpha_beta_vulpe.unselect()
+                    
+                    self.alegere_vulpe = "om"
 
+                elif eveniment.ui_element == self.buton_min_max_vulpe:
+                    self.buton_min_max_vulpe.select()
+                    
+                    self.buton_om_vulpe.unselect()
+                    self.buton_alpha_beta_vulpe.unselect()
+                    
+                    self.alegere_vulpe = "mm"
+
+                elif eveniment.ui_element == self.buton_alpha_beta_vulpe:
+                    self.buton_alpha_beta_vulpe.select()
+                    
+                    self.buton_om_vulpe.unselect()
+                    self.buton_min_max_vulpe.unselect()
+                    
+                    self.alegere_vulpe = "ab"
+
+                elif eveniment.ui_element == self.dificultate_vulpe_1:
                     self.dificultate_vulpe_1.select()
+                    
                     self.dificultate_vulpe_2.unselect()
                     self.dificultate_vulpe_3.unselect()
+                    
                     self.vulpe_dificultate = 0
 
                 elif eveniment.ui_element == self.dificultate_vulpe_2:
-
-                    self.dificultate_vulpe_1.unselect()
                     self.dificultate_vulpe_2.select()
+                    
+                    self.dificultate_vulpe_1.unselect()
                     self.dificultate_vulpe_3.unselect()
+                    
                     self.vulpe_dificultate = 1
 
                 elif eveniment.ui_element == self.dificultate_vulpe_3:
-
+                    self.dificultate_vulpe_3.select()
+                    
                     self.dificultate_vulpe_1.unselect()
                     self.dificultate_vulpe_2.unselect()
-                    self.dificultate_vulpe_3.select()
+                    
                     self.vulpe_dificultate = 2
 
+                # ---------------- Pentru butonul de start ---------------
                 elif eveniment.ui_element == self.buton_de_start:
 
                     self.graf_joc = TablaDeJoc()
                     self.configuratie_curenta = ConfiguratieJoc(self.graf_joc)
                     self.configuratie_curenta.afisare_consola(self.graf_joc)
 
-                    self.joc = 1
+                    self.joc_pornit = 1
 
-                    if self.gaste_tip == 0:
-                        self.dog_Jucator = om_gasca()
-                    elif self.gaste_tip == 1:
-                        self.dog_Jucator = min_max_gasca(self.gaste_dificultate)
-                    elif self.gaste_tip == 2:
-                        self.dog_Jucator = alpha_beta_gasca(self.gaste_dificultate)
+                    if self.alegere_gaste == "om":
+                        self.jucator_gasca = OmGaste()
+                    elif self.alegere_gaste == "mm":
+                        self.jucator_gasca = MMGaste(self.gaste_dificultate)
+                    elif self.alegere_gaste == "ab":
+                        self.jucator_gasca = ABGaste(self.gaste_dificultate)
 
-                    if self.vulpe_tip == 0:
-                        self.jaguar_Jucator = om_vulpe()
-                    elif self.vulpe_tip == 1:
-                        self.jaguar_Jucator = min_max_vulpe(self.vulpe_dificultate)
-                    elif self.vulpe_tip == 2:
-                        self.jaguar_Jucator = alpha_beta_vulpe(self.vulpe_dificultate)
+                    if self.alegere_vulpe == "om":
+                        self.jucator_vulpe = OmVulpe()
+                    elif self.alegere_vulpe == "mm":
+                        self.jucator_vulpe = MMVulpe(self.vulpe_dificultate)
+                    elif self.alegere_vulpe == "ab":
+                        self.jucator_vulpe = ABVulpe(self.vulpe_dificultate)
 
-                    self.current_Jucator = self.jaguar_Jucator
+                    self.jucator_curent = self.jucator_vulpe
 
-                    self.dog_think_times = []
-                    self.jaguar_think_times = []
-                    self.dog_generated_noduri = []
-                    self.jaguar_generated_noduri = []
+                    self.gaste_timp_de_gandire = []
+                    self.vulpe_timp_de_gandire = []
+                    self.gaste_noduri_generate = []
+                    self.vulpe_noduri_generate = []
 
-                    self.last_think_time = time.time()
-                    self.start_game_time = time.time()
-                    self.shown_times = False
-                    self.game_running = True
+                    self.ultimul_timp_de_gandire = time.time()
+                    self.timp_start = time.time()
+                    self.timpi_afisare = False
+                    self.jocul_este_pornit = True
 
     def update(self):
 
         '''
-        functie update care se apeleaza la fiecare frame si apeleaza functia
-        care decide ce mutare se va dace in timpul jocului. La sfarsitul jocului
-        se afiseaza in consola informatiile cerute. Daca se apasa ESC, jocul se opreste.
+        Se apeleaza la fiecare frame
+        Aici este apelata functia care decide ce mutare se va face mai departe.
+        La sfarsitul jocului se afiseaza in consola informatiile cerute.
         '''
 
-        if self.joc == 0:
-            pass
-        elif self.joc == 1:
+        if self.joc_pornit == 1: # este in timpul jocului
 
             current_winner = self.configuratie_curenta.gaseste_castigator(self.graf_joc)
             mouse_input.update()
 
-            keys = pygame.key.get_pressed()
+            if current_winner == -1 and self.jocul_este_pornit:
 
-            if keys[K_ESCAPE]:
-                self.game_running = False
-
-            if current_winner == -1 and self.game_running:
-
-                configuratie_nouauration, generated_noduri = self.current_Jucator.muta(self.graf_joc,
-                                                                                 self.configuratie_curenta)
-                if configuratie_nouauration != self.configuratie_curenta:
+                configuratie_noua, generated_noduri = self.jucator_curent.muta(self.graf_joc, self.configuratie_curenta)
+                
+                if configuratie_noua != self.configuratie_curenta:
 
                     current_time = time.time()
-                    time_diff = current_time - self.last_think_time
-                    self.last_think_time = current_time
+                    diferenta_timp = current_time - self.ultimul_timp_de_gandire
 
-                    configuratie_nouauration.afisare_consola(self.graf_joc)
+                    self.ultimul_timp_de_gandire = current_time
 
-                    print("Timpul de gandire: " + str(time_diff))
+                    configuratie_noua.afisare_consola(self.graf_joc)
 
-                    if self.dog_Jucator == self.current_Jucator:
-                        self.dog_think_times.append(time_diff)
-                        self.dog_generated_noduri.append(generated_noduri)
-                        self.current_Jucator = self.jaguar_Jucator
+                    print("Timpul de gandire: " + str(diferenta_timp))
+
+                    if self.jucator_gasca == self.jucator_curent:
+                        self.jucator_curent = self.jucator_vulpe
+
+                        self.gaste_timp_de_gandire.append(diferenta_timp)
+                        self.gaste_noduri_generate.append(generated_noduri)
+
                     else:
-                        self.jaguar_think_times.append(time_diff)
-                        self.jaguar_generated_noduri.append(generated_noduri)
-                        self.current_Jucator = self.dog_Jucator
-                    self.configuratie_curenta = configuratie_nouauration
-            else:
-                if not self.shown_times:
+                        self.jucator_curent = self.jucator_gasca
 
-                    if len(self.jaguar_think_times) > 0 and len(self.dog_think_times) > 0:
-                        print("Timpi de gandire pentru gaste: ")
-                        print("Minim: " + str(min(self.dog_think_times)))
-                        print("Maxim: " + str(max(self.dog_think_times)))
-                        print("Medie: " + str(sum(self.dog_think_times) / len(self.dog_think_times)))
-                        sorted(self.dog_think_times)
-                        print("Mediana: " + str(self.dog_think_times[int(len(self.dog_think_times) / 2)]))
-                        print("--------------------------------------------------------------")
-                        print("Timpi de gandire pentru vulpe: ")
-                        print("Minim: " + str(min(self.jaguar_think_times)))
-                        print("Maxim: " + str(max(self.jaguar_think_times)))
-                        print("Medie: " + str(sum(self.jaguar_think_times) / len(self.jaguar_think_times)))
-                        sorted(self.jaguar_think_times)
-                        print("Mediana: " + str(self.jaguar_think_times[int(len(self.jaguar_think_times) / 2)]))
-                        print("--------------------------------------------------------------")
-                        print("Noduri generate gaste: ")
-                        print("Minim: " + str(min(self.dog_generated_noduri)))
-                        print("Maxim: " + str(max(self.dog_generated_noduri)))
-                        print("Medie: " + str(sum(self.dog_generated_noduri) / len(self.dog_generated_noduri)))
-                        sorted(self.dog_generated_noduri)
-                        print("Mediana: " + str(self.dog_generated_noduri[int(len(self.dog_generated_noduri) / 2)]))
-                        print("--------------------------------------------------------------")
-                        print("Noduri generate vulpe: ")
-                        print("Minim: " + str(min(self.jaguar_generated_noduri)))
-                        print("Maxim: " + str(max(self.jaguar_generated_noduri)))
-                        print("Medie: " + str(sum(self.jaguar_generated_noduri) / len(self.jaguar_generated_noduri)))
-                        sorted(self.jaguar_generated_noduri)
-                        print("Mediana: " + str(self.jaguar_generated_noduri[int(len(self.jaguar_generated_noduri) / 2)]))
-                        print("--------------------------------------------------------------")
-                        print("Timpul jocului: " + str(time.time() - self.start_game_time))
-                        print("Nr mutari gaste: " + str(len(self.dog_think_times)))
-                        print("Nr mutari vulpe: " + str(len(self.jaguar_think_times)))
+                        self.vulpe_timp_de_gandire.append(diferenta_timp)
+                        self.vulpe_noduri_generate.append(generated_noduri)
 
-                        self.shown_times = True
+                    self.configuratie_curenta = configuratie_noua
 
-                if mouse_input.eliberat or (not self.game_running):
-                    self.joc = 0
+            elif not self.timpi_afisare:
+
+                    if len(self.vulpe_timp_de_gandire) > 0 and len(self.gaste_timp_de_gandire) > 0:
+                        print("----Timpi de gandire pentru gaste-------")
+                        print("Minim: " + str(min(self.gaste_timp_de_gandire)))
+                        print("Maxim: " + str(max(self.gaste_timp_de_gandire)))
+                        print("Medie: " + str(sum(self.gaste_timp_de_gandire) / len(self.gaste_timp_de_gandire)))
+                        sorted(self.gaste_timp_de_gandire)
+                        print("Mediana: " + str(self.gaste_timp_de_gandire[int(len(self.gaste_timp_de_gandire) / 2)]))
+
+                        print("--------------------------------------------------------------")
+
+                        print("------Timpi de gandire pentru vulpe-----")
+                        print("Minim: " + str(min(self.vulpe_timp_de_gandire)))
+                        print("Maxim: " + str(max(self.vulpe_timp_de_gandire)))
+                        print("Medie: " + str(sum(self.vulpe_timp_de_gandire) / len(self.vulpe_timp_de_gandire)))
+                        sorted(self.vulpe_timp_de_gandire)
+                        print("Mediana: " + str(self.vulpe_timp_de_gandire[int(len(self.vulpe_timp_de_gandire) / 2)]))
+
+                        print("--------------------------------------------------------------")
+
+                        print("-----Noduri generate gaste-----")
+                        print("Minim: " + str(min(self.gaste_noduri_generate)))
+                        print("Maxim: " + str(max(self.gaste_noduri_generate)))
+                        print("Medie: " + str(sum(self.gaste_noduri_generate) / len(self.gaste_noduri_generate)))
+                        sorted(self.gaste_noduri_generate)
+                        print("Mediana: " + str(self.gaste_noduri_generate[int(len(self.gaste_noduri_generate) / 2)]))
+
+                        print("--------------------------------------------------------------")
+
+                        print("-----Noduri generate vulpe-----")
+                        print("Minim: " + str(min(self.vulpe_noduri_generate)))
+                        print("Maxim: " + str(max(self.vulpe_noduri_generate)))
+                        print("Medie: " + str(sum(self.vulpe_noduri_generate) / len(self.vulpe_noduri_generate)))
+                        sorted(self.vulpe_noduri_generate)
+                        print("Mediana: " + str(self.vulpe_noduri_generate[int(len(self.vulpe_noduri_generate) / 2)]))
+
+                        print("--------------------------------------------------------------")
+
+                        print("Timpul jocului: " + str(time.time() - self.timp_start))
+                        print("Numar mutari gaste: " + str(len(self.gaste_timp_de_gandire)))
+                        print("Numar mutari vulpe: " + str(len(self.vulpe_timp_de_gandire)))
+
+                        self.timpi_afisare = True
+
+                    if mouse_input.eliberat or (not self.jocul_este_pornit):
+                        self.joc_pornit = 0
 
     def incarcare(self, ecran):
 
         '''
-        functie care deseneaza pe ecran toate lucrurile cerute (se apeleaza
-        si functii de randare din alte clase in interiorul acestei clase)
+        Metoda care deseneaza pe ecran toate lucrurile cerute 
         '''
 
-        if self.joc == 0:
-            pass
-        elif self.joc == 1:
+        if self.joc_pornit == 1:
 
-            turn_string = "Randul gastelor"
-            if self.current_Jucator == self.jaguar_Jucator:
-                turn_string = "Randul vulpii"
+            if self.jucator_curent == self.jucator_vulpe:
+               mesaj = "Randul vulpii"
+            else:
+                mesaj = "Randul gastelor"
 
-            text_surface = self.font_marime_text.render(turn_string, False, (0, 0, 0))
-            ecran.blit(text_surface, (MARGINI, MARGINI / 2))
+            castigator = self.configuratie_curenta.gaseste_castigator(self.graf_joc)
+
+            if castigator != -1:
+                text_rezultat_joc = "Gastele au castigat !"
+
+                if castigator == 1:
+                    text_rezultat_joc = "Vulpea a castigat !"
+
+                afisare_mesaj = self.font_marime_text.render(text_rezultat_joc, False, (10, 123, 0))
+                ecran.blit(afisare_mesaj, (170, 600))
+
+            afisare_mesaj = self.font_marime_text.render(mesaj, False, (10, 123, 0))
+            ecran.blit(afisare_mesaj, (170, 50))
 
             self.graf_joc.desenare_tabla_joc(ecran)
             self.configuratie_curenta.incarcare(ecran, self.graf_joc)
-            self.current_Jucator.incarcare(ecran, self.graf_joc)
-
-            current_winner = self.configuratie_curenta.gaseste_castigator(self.graf_joc)
-            if current_winner != -1:
-                winner_string = "Gastele au castigat !"
-                if current_winner == 1:
-                    winner_string = "Vulpea a castigat !"
-                text_surface = self.font_marime_text.render(winner_string, False, (0, 0, 0))
-                ecran.blit(text_surface, (MARGINI, INALTIME - MARGINI * 2))
+            self.jucator_curent.incarcare(ecran, self.graf_joc)
 
 
 def start():
-    joc_pornit = True
+    pornit = True
 
     pygame.init()
     pygame.font.init()
     pygame.display.set_caption('Dima Oana-Teodora Vulpi si Gaste')
 
     ecran = pygame.display.set_mode([LUNGIME, INALTIME])
-    UI_manager = pygame_gui.UIManager((LUNGIME, INALTIME))
+    ui_manager = pygame_gui.UIManager((LUNGIME, INALTIME))
     timp = pygame.time.Clock()
-    Joc = Game(UI_manager)
+    jocul_propriuzis = Joc(ui_manager)
 
-    while joc_pornit:
+    while pornit:
 
-        t = timp.tick(60) / 1000.0
+        t = timp.tick(60) / 1000.0 # tick -> updatare ceas
         ecran.fill((242, 170, 87))  # culoare ecran
 
         for eveniment in pygame.event.get():
 
-            if eveniment.type == pygame.QUIT:
-                joc_pornit = False
+            if eveniment.type == pygame.QUIT: # daca am ales sa inchid din X
+                pornit = False
 
-            if Joc.joc == 0:
-                Joc.ui_update(eveniment)
-                UI_manager.process_events(eveniment)
+            if jocul_propriuzis.joc_pornit == 0: # nu am apasat butonul de start
+                jocul_propriuzis.apasare_butoane_meniu(eveniment)
+                ui_manager.process_events(eveniment) # metoda din pygame care proceseaza eventurile de input si da un raspuns
 
-        if Joc.joc == 0:
-            UI_manager.update(t)
+        if jocul_propriuzis.joc_pornit == 0: # nu am apasat butonul de start
+            ui_manager.update(t) # metoda din pygame care proceseaza eventurile de input si da un raspuns
 
-        Joc.update()
-        Joc.incarcare(ecran)
+        jocul_propriuzis.update()
+        jocul_propriuzis.incarcare(ecran)
 
-        if Joc.joc == 0:
-            UI_manager.draw_ui(ecran)
+        if jocul_propriuzis.joc_pornit == 0:
+            ui_manager.draw_ui(ecran)
 
         pygame.display.flip()
 
     pygame.quit()
+# intializari
+algoritmi = Algortimi()
+mouse_input = MouseInput()
 
+# constante
+LUNGIME = 600
+INALTIME = 700
+
+MARGINI = 80
+
+RAZA_CERC = 20
+
+# pornire joc_pornit
 start()
