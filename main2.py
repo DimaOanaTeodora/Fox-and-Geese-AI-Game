@@ -249,46 +249,9 @@ class ConfiguratieJoc:
         pygame.draw.circle(ecran, (224, 4, 4), self.tabla_de_joc.noduri[self.vulpe].punct_desenat, RAZA_CERC)
 
 
-class Jucator:
+class Gaste:
     '''
-    Clasa de baza pe care o mostenesc toate tipurile de jucatori, chit
-    ca sunt jucatori umani sau AI-uri.
-    '''
-
-    def __init__(self):
-        pass
-
-    def muta(self, tabla_de_joc, configuratie_curenta):
-        '''
-        Din moment ce e un jucator generic, nu va face nicio mutare
-        '''
-        return configuratie_curenta
-
-    def returneaza_nod_apasat(self, tabla_de_joc, pozitie_click):
-
-        '''
-        Metoda care primeste tabla de joc si pozitia la care s-a dat click pe ecran
-        si returneaza indexul nodului pe care s-a dat click
-        '''
-
-        index = -1  # returneaza -1 daca nu s-a dat click
-        for i in range(33):
-            nod = tabla_de_joc.noduri[i]
-            if distanta_Euclid(nod.punct_desenat, pozitie_click) <= RAZA_CERC:
-                index = i
-                break
-
-        return index
-
-    def incarcare(self, ecran, tabla_de_joc):  # TODO vezi aici daca poti sa o scoti
-        pass
-
-
-
-class Gaste(Jucator):
-    '''
-    Clasa care mosteneste clasa Jucator, si care va fi mostenita
-    de clasele care controleaza gaste.
+    Mostenita de clasele care controleaza gastele
     '''
 
     def __init__(self):
@@ -319,7 +282,7 @@ class Gaste(Jucator):
         return vector_config
 
     # TODO nu e metoda a clasei
-    def estimare(tabla_de_joc, configuratie_curenta, c):
+    def estimare_gaste(tabla_de_joc, configuratie_curenta, c):
 
         '''
         Una din functiile de estimare. Aceasta functie este in favoarea gastelor.
@@ -336,10 +299,32 @@ class Gaste(Jucator):
         return nr_gaste
 
 
-class Vulpe(Jucator):
+    # TODO: ASTEA SUNT COMUNE DIN Jucator
+
+    def returneaza_nod_apasat(self, tabla_de_joc, pozitie_click):
+
+        '''
+        Metoda care primeste tabla de joc si pozitia la care s-a dat click pe ecran
+        si returneaza indexul nodului pe care s-a dat click
+        '''
+
+        index = -1  # returneaza -1 daca nu s-a dat click
+        for i in range(33):
+            nod = tabla_de_joc.noduri[i]
+            if distanta_Euclid(nod.punct_desenat, pozitie_click) <= RAZA_CERC:
+                index = i
+                break
+
+        return index
+
+    def incarcare(self, ecran, tabla_de_joc):  # TODO vezi aici daca poti sa o scoti
+        pass
+
+
+
+class Vulpe:
     '''
-    Clasa care mosteneste clasa Jucator, si care va fi mostenita
-    de clasele care controleaza vulpea.
+    Mostenita de clasele care controleaza vulpea
     '''
 
     def __init__(self):
@@ -471,11 +456,32 @@ class Vulpe(Jucator):
         return configuratii_posibile
 
     # TODO nici asta nu e functie a clasei
-    def estimare(tabla_de_joc, configuratie_anterioara, configuratie_curenta):
+    def estimare_vulpe(tabla_de_joc, configuratie_anterioara, configuratie_curenta):
         """
         O functie de estimare vulpe
         """
         return len(configuratie_anterioara.gaste) - len(configuratie_curenta.gaste)
+
+    # TODO: ASTEA SUNT COMUNE DIN Jucator
+    def returneaza_nod_apasat(self, tabla_de_joc, pozitie_click):
+
+        '''
+        Metoda care primeste tabla de joc si pozitia la care s-a dat click pe ecran
+        si returneaza indexul nodului pe care s-a dat click
+        '''
+
+        index = -1  # returneaza -1 daca nu s-a dat click
+        for i in range(33):
+            nod = tabla_de_joc.noduri[i]
+            if distanta_Euclid(nod.punct_desenat, pozitie_click) <= RAZA_CERC:
+                index = i
+                break
+
+        return index
+
+    def incarcare(self, ecran, tabla_de_joc):  # TODO vezi aici daca poti sa o scoti
+        pass
+
 
 
 class Algortimi:
@@ -640,9 +646,10 @@ class MMGaste(Gaste):
         '''
         algoritmi.nr_mutari = 0
         result = Algortimi.min_max(tabla_de_joc, configuratie_curenta, configuratie_curenta, True, False, 0,
-                                   Algortimi.transformare_in_adancime(self.dificultate), Gaste.estimare)
+                                   Algortimi.transformare_in_adancime(self.dificultate), Gaste.estimare_gaste)
         print("Estimare: " + str(result[1]))
         print("Noduri Generate: " + str(algoritmi.nr_mutari))
+        
         return (result[0], algoritmi.nr_mutari)
 
 
@@ -665,10 +672,11 @@ class ABGaste(Gaste):
         '''
         algoritmi.nr_mutari = 0
         result = Algortimi.alpha_beta(tabla_de_joc, configuratie_curenta, configuratie_curenta, True, False, 0,
-                                      Algortimi.transformare_in_adancime(self.dificultate), Gaste.estimare,
+                                      Algortimi.transformare_in_adancime(self.dificultate), Gaste.estimare_gaste,
                                       -sys.maxsize, sys.maxsize)
         print("Estimare: " + str(result[1]))
         print("Noduri Generate: " + str(algoritmi.nr_mutari))
+        
         return (result[0], algoritmi.nr_mutari)
 
 
@@ -742,7 +750,7 @@ class MMVulpe(Vulpe):
         '''
         algoritmi.nr_mutari = 0
         result = Algortimi.min_max(tabla_de_joc, configuratie_curenta, configuratie_curenta, True, True, 0,
-                                   Algortimi.transformare_in_adancime(self.dificultate), Vulpe.estimare)
+                                   Algortimi.transformare_in_adancime(self.dificultate), Vulpe.estimare_vulpe)
         print("Estimare: " + str(result[1]))
         print("Noduri Generate: " + str(algoritmi.nr_mutari))
         return (result[0], algoritmi.nr_mutari)
@@ -768,7 +776,7 @@ class ABVulpe(Vulpe):
         '''
         algoritmi.nr_mutari = 0
         result = Algortimi.alpha_beta(tabla_de_joc, configuratie_curenta, configuratie_curenta, True, True, 0,
-                                      Algortimi.transformare_in_adancime(self.dificultate), Vulpe.estimare,
+                                      Algortimi.transformare_in_adancime(self.dificultate), Vulpe.estimare_vulpe,
                                       -sys.maxsize, sys.maxsize)
         print("Estimare: " + str(result[1]))
         print("Noduri Generate: " + str(algoritmi.nr_mutari))
