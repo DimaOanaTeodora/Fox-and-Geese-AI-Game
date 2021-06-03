@@ -4,8 +4,6 @@ import pygame
 import pygame_gui
 import time
 
-# TODO: gastele muta primele
-
 def distanta_Euclid(punct1, punct2):
     """
     Distanta dintre doua punce de pe ecran.
@@ -384,8 +382,7 @@ class Vulpe:
 
     def __init__(self):
         '''
-        avem o lista care tine nodurile selectate pentru a
-        captura mai multi gaste (folosita de jucatorul uman)
+        Lista de noduri selectate pentru a face mai multe capturi
         '''
         self.noduri_selectate = []
 
@@ -417,7 +414,7 @@ class Vulpe:
         return configuratie_curenta
 
     # TODO nici asta nu e functie a clasei
-    def genereaza_posibile_capturi(solutii, tabla_de_joc, configuratie_curenta, solutie_actuala, alt_nod):
+    def genereaza_posibile_capturi(solutii, tabla_de_joc, configuratie_curenta, solutie_actuala):
 
         '''
         functie recursiva returneaza toate posibilitatile de liste
@@ -431,7 +428,7 @@ class Vulpe:
             if verificare_adaugare(solutie_actuala, tabla_de_joc, configuratie_curenta, alt_nod):
                 solutie_noua = solutie_actuala.copy()
                 solutie_noua.append(alt_nod)
-                Vulpe.genereaza_posibile_capturi(solutii, tabla_de_joc, configuratie_curenta, solutie_noua, alt_nod)
+                Vulpe.genereaza_posibile_capturi(solutii, tabla_de_joc, configuratie_curenta, solutie_noua)
 
     # TODO nici asta nu e functie a clasei
     def configurari_posibile(tabla_de_joc, configuratie_curenta):
@@ -448,8 +445,7 @@ class Vulpe:
             if mutare_valida(tabla_de_joc, configuratie_curenta, configuratie_curenta.vulpe, other):
                 possible_noduri_selectates.append([other])
 
-        Vulpe.genereaza_posibile_capturi(possible_noduri_selectates, tabla_de_joc, configuratie_curenta, [],
-                                         configuratie_curenta.vulpe)
+        Vulpe.genereaza_posibile_capturi(possible_noduri_selectates, tabla_de_joc, configuratie_curenta, [])
 
         configuratii_posibile = [
             Vulpe.configuratie_noua_dupa_mutare(noduri_selectate, tabla_de_joc, configuratie_curenta)
@@ -471,10 +467,10 @@ class Vulpe:
 
 
 class Algortimi:
-    '''
-    clasa care contine algoritmii min_max si alpha-beta
-    adaptati pentru jocul nostru
-    '''
+    """
+    Algorimii Min-Max si Alpha-Beta
+    si transformarea dificultatii in adancime
+    """
 
     def __init__(self):
         '''
@@ -510,7 +506,9 @@ class Algortimi:
         if crt_level >= maxim_nivele - 1:
             sol = (None, -1)
             for configuratie_noua in configuratii_posibile:
-                crt_cost = functie_cost(tabla_de_joc, configuratie_initiala, configuratie_noua)
+                # crt_cost = functie_cost(tabla_de_joc, configuratie_initiala, configuratie_noua)
+                #TODO VEZI AICI CU PARAMETRII gastele au 2 vulpea are 3
+                crt_cost = functie_cost(tabla_de_joc, configuratie_initiala)
                 if este_maxim:
                     if crt_cost > sol[1]:
                         sol = (configuratie_noua, crt_cost)
@@ -561,7 +559,8 @@ class Algortimi:
         if crt_level >= maxim_nivele - 1:
             sol = (None, -1)
             for configuratie_noua in configuratii_posibile:
-                crt_cost = functie_cost(tabla_de_joc, configuratie_initiala, configuratie_noua)
+                # crt_cost = functie_cost(tabla_de_joc, configuratie_initiala, configuratie_noua)
+                crt_cost = functie_cost(tabla_de_joc, configuratie_initiala)
                 if este_maxim:
                     if crt_cost > sol[1]:
                         sol = (configuratie_noua, crt_cost)
@@ -612,83 +611,27 @@ class Algortimi:
 
         return (configuratie_curenta, 0)
 
-
-class MMGaste(Gaste):
-    '''
-    clasa pentru jucatorul de gaste care foloseste min_max
-    '''
-
-    def __init__(self, dificultate):
-        '''
-        cand se creaza jucatorul trebuie sa ii stim dificultatea
-        cu care o sa joace
-        '''
-        self.dificultate = dificultate
-
-    def muta(self, tabla_de_joc, configuratie_curenta):
-        '''
-        Face o mutare folosind algoritmul min_max pentru a determina mutarea.
-        Se afiseaza pe ecran informatiile cerute.
-        '''
-        algoritmi.nr_mutari = 0
-        
-        result = Algortimi.min_max(tabla_de_joc, configuratie_curenta, configuratie_curenta, True, False, 0,
-                                   Algortimi.transformare_in_adancime(self.dificultate), Gaste.estimare_gaste)
-        
-        print("Estimare: " + str(result[1]))
-        print("Noduri Generate: " + str(algoritmi.nr_mutari))
-        
-        return (result[0], algoritmi.nr_mutari)
-
-
-class ABGaste(Gaste):
-    '''
-    clasa pentru jucatorul cu gaste care foloseste alpha-beta
-    '''
-
-    def __init__(self, dificultate):
-        '''
-        cand se creaza jucatorul trebuie sa ii stim dificultatea
-        cu care o sa joace
-        '''
-        self.dificultate = dificultate
-
-    def muta(self, tabla_de_joc, configuratie_curenta):
-        '''
-        Face o mutare folosind algoritmul alpha-beta pentru a determina mutarea.
-        Se afiseaza pe ecran informatiile cerute.
-        '''
-        algoritmi.nr_mutari = 0
-        result = Algortimi.alpha_beta(tabla_de_joc, configuratie_curenta, configuratie_curenta, True, False, 0,
-                                      Algortimi.transformare_in_adancime(self.dificultate), Gaste.estimare_gaste,
-                                      -sys.maxsize, sys.maxsize)
-        print("Estimare: " + str(result[1]))
-        print("Noduri Generate: " + str(algoritmi.nr_mutari))
-        
-        return (result[0], algoritmi.nr_mutari)
-
-
 class OmGaste(Gaste):
-    '''
-    clasa pentru jucatorul uman care controleaza caini.
-    '''
+    """
+    Jucatorul uman care a ales sa joace cu gastele
+    """
 
     def __init__(self):
-        '''
-        vom tine minte ultimul caine selectat, pentru ca
-        vom face mutarea folosind acel caine
-        '''
-        self.gasca_selectata = -1
+       """
+       Retin ultima gasca selectata pentru ca voi face mutarea cu ea.
+       """
+       self.gasca_selectata = -1
 
     def muta(self, tabla_de_joc, configuratie_curenta):
+        """
+        Apelata de mai multe ori in update pana cand se face o mutare.
+        Daca mutarea este valida se efectueaza mutarea gastei de catre utilizatorul uman.
 
-        '''
-        functia care face o mutare in functie de ce apasa utlizatorul (este
-        posibil sa fie apelata de mai multe ori in update pana sa se faca
-        o mutare, deoarece depinde de Jucator, nu de calculator, nu stim cand
-        se va decide). Se asteapta selectarea unui caine, dupa care se face mutarea
-        aleasa daca este valida (se poate schimba cainele).
-        '''
+        :param tabla_de_joc: insta a clasei TablaDeJoc
+        :param configuratie_curenta: starea curenta a jocului
+
+        :return: configuratia noua de joc si nr de mutari # TODO: vezi ce e cu acel 0
+        """
 
         if mouse_input.eliberat:
             index_nod = returneaza_nod_apasat(tabla_de_joc, pygame.mouse.get_pos())
@@ -717,67 +660,10 @@ class OmGaste(Gaste):
             pygame.draw.circle(ecran, (0, 255, 0), tabla_de_joc.noduri[self.gasca_selectata].punct_desenat, RAZA_CERC)
             pygame.draw.circle(ecran, (0, 0, 0), tabla_de_joc.noduri[self.gasca_selectata].punct_desenat, RAZA_CERC, 3)
 
-
-class MMVulpe(Vulpe):
-    '''
-    clasa pentru jucatorul vulpe care foloseste min_max
-    '''
-
-    def __init__(self, dificultate):
-        '''
-        cand se creaza jucatorul trebuie sa ii stim dificultatea
-        cu care o sa joace
-        '''
-        super().__init__()
-        self.dificultate = dificultate
-
-    def muta(self, tabla_de_joc, configuratie_curenta):
-        '''
-        Face o mutare folosind algoritmul min_max pentru a determina mutarea.
-        Se afiseaza pe ecran informatiile cerute.
-        '''
-        algoritmi.nr_mutari = 0
-        result = Algortimi.min_max(tabla_de_joc, configuratie_curenta, configuratie_curenta, True, True, 0,
-                                   Algortimi.transformare_in_adancime(self.dificultate), Vulpe.estimare_vulpe)
-        
-        print("Estimare: " + str(result[1]))
-        print("Noduri Generate: " + str(algoritmi.nr_mutari))
-        
-        return (result[0], algoritmi.nr_mutari)
-
-
-
-class ABVulpe(Vulpe):
-    '''
-    clasa pentru jucatorul vulpe care foloseste alpha-beta
-    '''
-
-    def __init__(self, dificultate):
-        '''
-        cand se creaza jucatorul trebuie sa ii stim dificultatea
-        cu care o sa joace
-        '''
-        super().__init__()
-        self.dificultate = dificultate
-
-    def muta(self, tabla_de_joc, configuratie_curenta):
-        '''
-        Face o mutare folosind algoritmul alpha-beta pentru a determina mutarea.
-        Se afiseaza pe ecran informatiile cerute.
-        '''
-        algoritmi.nr_mutari = 0
-        result = Algortimi.alpha_beta(tabla_de_joc, configuratie_curenta, configuratie_curenta, True, True, 0,
-                                      Algortimi.transformare_in_adancime(self.dificultate), Vulpe.estimare_vulpe,
-                                      -sys.maxsize, sys.maxsize)
-        print("Estimare: " + str(result[1]))
-        print("Noduri Generate: " + str(algoritmi.nr_mutari))
-        return (result[0], algoritmi.nr_mutari)
-
-
 class OmVulpe(Vulpe):
-    '''
-    clasa pentru jucatorul uman de vulpe
-    '''
+    """
+    Jucatorul uman care a ales sa joacce cu vulpea
+    """
 
     def __init__(self):
         '''
@@ -813,30 +699,120 @@ class OmVulpe(Vulpe):
 
         return (configuratie_curenta, 0)
 
-    def incarcare(self, ecran, tabla_de_joc):
+    def incarcare(self, ecran, tabla_de_joc): # TODO: asta era de la cercul verde vezi daca poti sa o scoti
+        pass
 
-        '''
-        deseneaza nodurile din planul de captura cu verde
-        '''
 
-        for node in self.noduri_selectate:
-            pygame.draw.circle(ecran, (0, 255, 0), tabla_de_joc.noduri[node].punct_desenat, RAZA_CERC)
+class MMVulpe(Vulpe):
+    """
+    Calculatorul care face predictii cu Min-max si joaca ca vulpe
+    """
+
+    def __init__(self, dificultate):
+        self.dificultate = dificultate
+
+    def muta(self, tabla_de_joc, configuratie_curenta):
+        '''
+        Face o mutare folosind algoritmul min_max pentru a determina mutarea.
+        Se afiseaza pe ecran informatiile cerute.
+        '''
+        algoritmi.nr_mutari = 0
+        result = Algortimi.min_max(tabla_de_joc, configuratie_curenta, configuratie_curenta, True, True, 0,
+                                   Algortimi.transformare_in_adancime(self.dificultate), Vulpe.estimare_vulpe)
+        
+        print("Estimare: " + str(result[1]))
+        print("Noduri Generate: " + str(algoritmi.nr_mutari))
+        
+        return (result[0], algoritmi.nr_mutari)
+
+
+
+class ABVulpe(Vulpe):
+    """
+    Calculatorul care face predictii cu Alpha-Beta si joaca ca vulpe
+    """
+
+    def __init__(self, dificultate):
+        self.dificultate = dificultate
+
+    def muta(self, tabla_de_joc, configuratie_curenta):
+        '''
+        Face o mutare folosind algoritmul alpha-beta pentru a determina mutarea.
+        Se afiseaza pe ecran informatiile cerute.
+        '''
+        algoritmi.nr_mutari = 0
+        result = Algortimi.alpha_beta(tabla_de_joc, configuratie_curenta, configuratie_curenta, True, True, 0,
+                                      Algortimi.transformare_in_adancime(self.dificultate), Vulpe.estimare_vulpe,
+                                      -sys.maxsize, sys.maxsize)
+        print("Estimare: " + str(result[1]))
+        print("Noduri Generate: " + str(algoritmi.nr_mutari))
+        return (result[0], algoritmi.nr_mutari)
+
+
+class MMGaste(Gaste):
+    """
+    Calculatorul care face predictii cu Min-Max si joaca ca gaste
+    """
+
+    def __init__(self, dificultate):
+        '''
+        cand se creaza jucatorul trebuie sa ii stim dificultatea
+        cu care o sa joace
+        '''
+        self.dificultate = dificultate
+
+    def muta(self, tabla_de_joc, configuratie_curenta):
+        '''
+        Face o mutare folosind algoritmul min_max pentru a determina mutarea urmatoare
+        '''
+        algoritmi.nr_mutari = 0
+
+        result = Algortimi.min_max(tabla_de_joc, configuratie_curenta, configuratie_curenta, True, False, 0,
+                                   Algortimi.transformare_in_adancime(self.dificultate), Gaste.estimare_gaste)
+
+        print("Estimare: " + str(result[1]))
+        print("Noduri Generate: " + str(algoritmi.nr_mutari))
+
+        return (result[0], algoritmi.nr_mutari)
+
+
+class ABGaste(Gaste):
+    """
+    Calculatorul care face predictii cu Alpha-Beta si joaca ca gaste
+    """
+
+    def __init__(self, dificultate):
+        self.dificultate = dificultate
+
+    def muta(self, tabla_de_joc, configuratie_curenta):
+        """
+        Urmatoarea mutare determinata de Alpha-Beta
+
+        :param tabla_de_joc: insta a clasei TablaDeJoc
+        :param configuratie_curenta: starea curenta a jocului
+
+        :return:urmatoarea mutare si nr de mutari efectuate
+        """
+        algoritmi.nr_mutari = 0
+        result = Algortimi.alpha_beta(tabla_de_joc, configuratie_curenta, configuratie_curenta, True, False, 0,
+                                      Algortimi.transformare_in_adancime(self.dificultate), Gaste.estimare_gaste,
+                                      -sys.maxsize, sys.maxsize)
+        print("Estimare: " + str(result[1]))
+        print("Noduri Generate: " + str(algoritmi.nr_mutari))
+
+        return (result[0], algoritmi.nr_mutari)
 
 
 class Joc:
-    '''
+    """
     Functionare joc si meniu -> apel catre diverse
-    '''
+    """
 
     def __init__(self, ui_manager):
 
-        '''
-        pregateste jocul si meniul
-        '''
-
-        self.joc_pornit = 0  # am inceput jocul propriu-zis sau sunt inca in menu
-
-        # cu ce a ales sa joace userul/ userii
+        self.joc_pornit = 0  # 1 daca am inceput jocul propriu-zis 
+        
+        # alegerea by default pentru cei 2 jucatori
         self.alegere_gaste = "om"
         self.alegere_vulpe = "om"
 
@@ -846,14 +822,16 @@ class Joc:
         # stilul fontului pt mesajul cu randul mutarii
         self.font_marime_text = pygame.font.SysFont('arial.ttf', 60)
 
+        # apelare functie de realizare a meniuliu
         self.meniu(ui_manager)
 
+    # desenare pygame
     def meniu(self, ui_manager):
-
-        '''
-        Metoda care creaza butoanele din meniu
-        '''
-
+        """
+        Butoane meniu
+        
+        :param ui_manager: managerul de UI pygame
+        """
         # --------------------- Butoane Gaste -------------- #
         self.text_gasca = pygame_gui.elements.UILabel(
             relative_rect=pygame.Rect((110, 130), (200, 40)),
@@ -953,12 +931,11 @@ class Joc:
         self.dificultate_vulpe_1.select()
 
     def apasare_butoane_meniu(self, eveniment):
-
-        '''
-        Metoda care verifica toate butoanele daca au fost apasate
-        Si actioneaza pe cele selectate
-
-        '''
+        """
+        Selecteaza butoanele care au fost apasate prin intermediul evenimentului
+        
+        :param eveniment: evenimentul de input (click)
+        """
 
         if eveniment.type == pygame.USEREVENT:
 
@@ -1085,7 +1062,7 @@ class Joc:
                     elif self.alegere_vulpe == "ab":
                         self.jucator_vulpe = ABVulpe(self.vulpe_dificultate)
 
-                    self.jucator_curent = self.jucator_vulpe
+                    self.jucator_curent = self.jucator_gasca # gastele incep primele
 
                     self.gaste_timp_de_gandire = []
                     self.vulpe_timp_de_gandire = []
@@ -1094,53 +1071,55 @@ class Joc:
 
                     self.ultimul_timp_de_gandire = time.time()
                     self.timp_start = time.time()
-                    self.timpi_afisare = False
-                    self.jocul_este_pornit = True
 
+                    self.timpi_afisare = False # ca sa-mi afiseze timpii la final doar o data
+
+                    # self.jocul_este_pornit = True
+
+    # apelata la fiecare frame
     def update(self):
+        """
+        Apelat la fiecare frame 
+        Apel catre functia care decide care va fi urmatoarea mutare => gasca/vulpe.muta(..)
+        """
 
-        '''
-        Se apeleaza la fiecare frame
-        Aici este apelata functia care decide ce mutare se va face mai departe.
-        La sfarsitul jocului se afiseaza in consola informatiile cerute.
-        '''
+        if self.joc_pornit == 1:  # este in timpul jocului (tabla de joc)
 
-        if self.joc_pornit == 1:  # este in timpul jocului
+            castigator_curent = self.configuratie_curenta.gaseste_castigator(self.tabla_de_joc)
+            mouse_input.update() 
 
-            current_winner = self.configuratie_curenta.gaseste_castigator(self.tabla_de_joc)
-            mouse_input.update()
+            if castigator_curent == "configuratie nefinala" :#and self.jocul_este_pornit: #am jocul deschis
 
-            if current_winner == "configuratie nefinala" and self.jocul_este_pornit:
-
-                configuratie_noua, generated_noduri = self.jucator_curent.muta(self.tabla_de_joc,
-                                                                               self.configuratie_curenta)
+                # calculez urmatoarea mutare
+                configuratie_noua, noduri_generate = self.jucator_curent.muta(self.tabla_de_joc, self.configuratie_curenta)
 
                 if configuratie_noua != self.configuratie_curenta:
 
                     current_time = time.time()
                     diferenta_timp = current_time - self.ultimul_timp_de_gandire
-
+                    # actualizez dupa ce am calculat diferenta de timp
                     self.ultimul_timp_de_gandire = current_time
 
-                    configuratie_noua.afisare_consola(self.tabla_de_joc)
+                    configuratie_noua.afisare_consola(self.tabla_de_joc) # afisare config curenta in consola
 
                     print("Timpul de gandire: " + str(diferenta_timp))
 
+                    # schimb randul jucatorilor
                     if self.jucator_gasca == self.jucator_curent:
                         self.jucator_curent = self.jucator_vulpe
 
                         self.gaste_timp_de_gandire.append(diferenta_timp)
-                        self.gaste_noduri_generate.append(generated_noduri)
+                        self.gaste_noduri_generate.append(noduri_generate)
 
                     else:
                         self.jucator_curent = self.jucator_gasca
 
                         self.vulpe_timp_de_gandire.append(diferenta_timp)
-                        self.vulpe_noduri_generate.append(generated_noduri)
+                        self.vulpe_noduri_generate.append(noduri_generate)
 
-                    self.configuratie_curenta = configuratie_noua
+                    self.configuratie_curenta = configuratie_noua # actualizez configuratia
 
-            elif not self.timpi_afisare:
+            elif not self.timpi_afisare: # ca sa afisez o singura data la finalul programului
 
                 if len(self.vulpe_timp_de_gandire) > 0 and len(self.gaste_timp_de_gandire) > 0:
                     print("----Timpi de gandire pentru gaste-------")
@@ -1185,14 +1164,16 @@ class Joc:
 
                     self.timpi_afisare = True
 
-                if mouse_input.eliberat or (not self.jocul_este_pornit):
-                    self.joc_pornit = 0
+                # if mouse_input.eliberat or (not self.jocul_este_pornit): #TODO ajunge la finalul jocului si vezi ce se intampla
+                #     self.joc_pornit = 0 # ma intorc in meniu
 
+    # desenare pygame
     def incarcare(self, ecran):
+        """
+        Scrie pe ecranul de joc randul si cine castiga.
 
-        '''
-        Metoda care deseneaza pe ecran toate lucrurile cerute
-        '''
+        :param ecran: ecranul de joc (pygame)
+        """
 
         if self.joc_pornit == 1:
 
