@@ -39,6 +39,60 @@ def mutare_valida(tabla_de_joc, configuratie_curenta, nr_nod_curent, nr_alt_nod)
 
     return False
 
+def gasca_intre_noduri(tabla_de_joc, nr_nod_initial, nr_nod_scop, nr_nod_gasca):
+    """
+    Verifica daca o gasca ( nr_nod_gasca)  se afla in linie dreapta intre nodurile nr_nod_initial si nr_nod_scop
+
+    :param tabla_de_joc: instanta a clasei TablaDeJoc
+    :param nr_nod_initial: numarul nodului de plecare
+    :param nr_nod_scop: numarul nodului scop
+    :param nr_nod_gasca: numarul nodului cu gasca
+
+    :return: True/ False
+    """
+
+    if nr_nod_initial in tabla_de_joc.muchii[nr_nod_gasca] and nr_nod_scop in tabla_de_joc.muchii[nr_nod_gasca]:
+
+        # x1-x2, y1-y2
+        vec1 = (tabla_de_joc.noduri[nr_nod_gasca].punct[0] - tabla_de_joc.noduri[nr_nod_initial].punct[0],
+                tabla_de_joc.noduri[nr_nod_gasca].punct[1] - tabla_de_joc.noduri[nr_nod_initial].punct[1])
+
+        vec2 = (tabla_de_joc.noduri[nr_nod_scop].punct[0] - tabla_de_joc.noduri[nr_nod_gasca].punct[0],
+                tabla_de_joc.noduri[nr_nod_scop].punct[1] - tabla_de_joc.noduri[nr_nod_gasca].punct[1])
+        # distanta dintre nod_gasca -> nod_intiial = distanta dintre nod_scop -> nod_gasca
+        if vec1 == vec2:
+            return True
+
+    return False
+
+def verificare_adaugare(noduri_selectate, tabla_de_joc, configuratie_curenta, alt_nod):
+    """
+    Verifica daca un nod se poate adauga la lista in care se pastreaza nodurile
+    prin care va trece vulpea in timp ce captureaza gastele
+
+    :param noduri_selectate: nodurile selectate # TODO: vezi aici mai multe explicatii
+    :param tabla_de_joc: instanta clasei TablaDeJoc
+    :param configuratie_curenta: starea curenta a tablei de joc
+    :param alt_nod: nodul de adaugat in lista
+
+    :return: True/False
+    """
+    nod_curent_vulpe = configuratie_curenta.vulpe
+    
+    if len(noduri_selectate) != 0:
+        nod_curent_vulpe = noduri_selectate[-1]
+
+    if alt_nod == configuratie_curenta.vulpe or nod_curent_vulpe == alt_nod:
+        return False
+
+    if (alt_nod in noduri_selectate) or (alt_nod in configuratie_curenta.gaste) :
+        return False
+
+    for gasca in configuratie_curenta.gaste:
+        if gasca_intre_noduri(tabla_de_joc, nod_curent_vulpe, alt_nod, gasca):
+            return True
+
+    return False
 
 class MouseInput:
     '''
@@ -317,9 +371,9 @@ class Gaste:
 
         return index
 
+    
     def incarcare(self, ecran, tabla_de_joc):  # TODO vezi aici daca poti sa o scoti
         pass
-
 
 
 class Vulpe:
@@ -334,59 +388,6 @@ class Vulpe:
         '''
         self.noduri_selectate = []
 
-    # TODO nici asta nu e functie a clasei
-    def gasca_intre_noduri(tabla_de_joc, nr_nod_initial, nr_nod_scop, nr_nod_gasca):
-
-        '''
-        functie care verifica daca o gasca ( nr_nod_gasca)  se afla
-        in linie dreapta intre nodurile nr_nod_initial si nr_nod_scop
-        Verifica daca distanta dintre nod_gasca -> nod_intiial = distanta dintre nod_scop -> nod_gasca
-        '''
-
-        if nr_nod_initial in tabla_de_joc.muchii[nr_nod_gasca] and nr_nod_scop in tabla_de_joc.muchii[nr_nod_gasca]:
-
-            # x1-x2, y1-y2
-            vec1 = (tabla_de_joc.noduri[nr_nod_gasca].punct[0] - tabla_de_joc.noduri[nr_nod_initial].punct[0],
-                    tabla_de_joc.noduri[nr_nod_gasca].punct[1] - tabla_de_joc.noduri[nr_nod_initial].punct[1])
-
-            vec2 = (tabla_de_joc.noduri[nr_nod_scop].punct[0] - tabla_de_joc.noduri[nr_nod_gasca].punct[0],
-                    tabla_de_joc.noduri[nr_nod_scop].punct[1] - tabla_de_joc.noduri[nr_nod_gasca].punct[1])
-
-            if vec1 == vec2:
-                return True
-
-        return False
-
-    # TODO nici asta nu e functie a clasei
-    # TODO asta nu stiu ce face exact
-    def verificare_adaugare(curent, tabla_de_joc, configuratie_curenta, alt_nod):
-
-        '''
-        functie care verifica daca un nod se poate adauga la lista in care
-        se pastreaza nodurile prin care va trece vulpea in timp ce captureaza gastele
-        '''
-
-        ultimul_nod_plan = configuratie_curenta.vulpe
-        if len(curent) != 0:
-            ultimul_nod_plan = curent[-1]
-
-        if ultimul_nod_plan == alt_nod:
-            return False
-
-        if alt_nod in configuratie_curenta.gaste:
-            return False
-
-        if alt_nod in curent:
-            return False
-
-        if alt_nod == configuratie_curenta.vulpe:
-            return False
-
-        for gasca in configuratie_curenta.gaste:
-            if Vulpe.gasca_intre_noduri(tabla_de_joc, ultimul_nod_plan, alt_nod, gasca):
-                return True
-
-        return False
 
     # TODO nici asta nu e functie a clasei
     # TODO asta nu stiu ce face exact
@@ -406,7 +407,7 @@ class Vulpe:
             numar_nod = noduri_selectate[i]
 
             for gasca in configuratie_curenta.gaste:
-                if Vulpe.gasca_intre_noduri(tabla_de_joc, nod_anterior, numar_nod, gasca):
+                if gasca_intre_noduri(tabla_de_joc, nod_anterior, numar_nod, gasca):
                     gaste_de_capturat.append(gasca)
 
         configuratie_curenta = ConfiguratieJoc(tabla_de_joc, [gasca for gasca in configuratie_curenta.gaste if
@@ -426,7 +427,7 @@ class Vulpe:
             solutii.append(crt_solution)
 
         for alt_nod in range(len(tabla_de_joc.noduri)):
-            if Vulpe.verificare_adaugare(crt_solution, tabla_de_joc, configuratie_curenta, alt_nod):
+            if verificare_adaugare(crt_solution, tabla_de_joc, configuratie_curenta, alt_nod):
                 solutie_noua = crt_solution.copy()
                 solutie_noua.append(alt_nod)
                 Vulpe.genereaza_posibile_capturi(solutii, tabla_de_joc, configuratie_curenta, solutie_noua, alt_nod)
@@ -481,7 +482,7 @@ class Vulpe:
 
     def incarcare(self, ecran, tabla_de_joc):  # TODO vezi aici daca poti sa o scoti
         pass
-
+    
 
 
 class Algortimi:
@@ -645,8 +646,10 @@ class MMGaste(Gaste):
         Se afiseaza pe ecran informatiile cerute.
         '''
         algoritmi.nr_mutari = 0
+        
         result = Algortimi.min_max(tabla_de_joc, configuratie_curenta, configuratie_curenta, True, False, 0,
                                    Algortimi.transformare_in_adancime(self.dificultate), Gaste.estimare_gaste)
+        
         print("Estimare: " + str(result[1]))
         print("Noduri Generate: " + str(algoritmi.nr_mutari))
         
@@ -655,7 +658,7 @@ class MMGaste(Gaste):
 
 class ABGaste(Gaste):
     '''
-    clasa pentru jucatorul de caini care foloseste alpha-beta
+    clasa pentru jucatorul cu gaste care foloseste alpha-beta
     '''
 
     def __init__(self, dificultate):
@@ -751,9 +754,12 @@ class MMVulpe(Vulpe):
         algoritmi.nr_mutari = 0
         result = Algortimi.min_max(tabla_de_joc, configuratie_curenta, configuratie_curenta, True, True, 0,
                                    Algortimi.transformare_in_adancime(self.dificultate), Vulpe.estimare_vulpe)
+        
         print("Estimare: " + str(result[1]))
         print("Noduri Generate: " + str(algoritmi.nr_mutari))
+        
         return (result[0], algoritmi.nr_mutari)
+
 
 
 class ABVulpe(Vulpe):
@@ -806,14 +812,14 @@ class OmVulpe(Vulpe):
             index_nod = self.returneaza_nod_apasat(tabla_de_joc, pygame.mouse.get_pos())
             if index_nod != -1:
                 if len(self.noduri_selectate) == 0:
-                    if Vulpe.verificare_adaugare(self.noduri_selectate, tabla_de_joc, configuratie_curenta, index_nod):
+                    if verificare_adaugare(self.noduri_selectate, tabla_de_joc, configuratie_curenta, index_nod):
                         self.noduri_selectate.append(index_nod)
 
                     elif mutare_valida(tabla_de_joc, configuratie_curenta, configuratie_curenta.vulpe,
                                        index_nod):
                         configuratie_curenta = ConfiguratieJoc(tabla_de_joc, configuratie_curenta.gaste, index_nod)
                 else:
-                    if Vulpe.verificare_adaugare(self.noduri_selectate, tabla_de_joc, configuratie_curenta, index_nod):
+                    if verificare_adaugare(self.noduri_selectate, tabla_de_joc, configuratie_curenta, index_nod):
                         self.noduri_selectate.append(index_nod)
                     else:
                         configuratie_curenta = Vulpe.configuratie_noua_dupa_mutare(self.noduri_selectate, tabla_de_joc,
