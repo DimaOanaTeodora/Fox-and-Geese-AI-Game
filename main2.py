@@ -3,8 +3,8 @@ import sys
 import pygame
 import pygame_gui
 import time
-from pygame.locals import *
 
+# TODO: gastele muta primele
 
 def distanta_Euclid(punct1, punct2):
     """
@@ -93,6 +93,24 @@ def verificare_adaugare(noduri_selectate, tabla_de_joc, configuratie_curenta, al
             return True
 
     return False
+
+def returneaza_nod_apasat(tabla_de_joc, pozitie_click):
+    """
+    :param tabla_de_joc: instanta a clasei TablaDeJoc
+    :param pozitie_click: pozitia la care s-a dat click pe ecran
+
+    :return: indexul nodului pe care s-a dat click
+    """
+
+    index = -1  # returneaza -1 daca nu s-a dat click
+    for i in range(33):
+        nod = tabla_de_joc.noduri[i]
+        if distanta_Euclid(nod.punct_desenat, pozitie_click) <= RAZA_CERC:
+            index = i
+            break
+
+    return index
+
 
 class MouseInput:
     '''
@@ -205,8 +223,6 @@ class TablaDeJoc:
                 pygame.draw.line(ecran, (0, 0, 0), pozitia1, pozitia2, 2)
 
 
-# TODO: gastele muta primele
-
 class ConfiguratieJoc:
     """
      O stare a jocului
@@ -304,9 +320,9 @@ class ConfiguratieJoc:
 
 
 class Gaste:
-    '''
-    Mostenita de clasele care controleaza gastele
-    '''
+    """
+    clasa de baza pt MMGaste, ABGaste, OmGaste
+    """
 
     def __init__(self):
         pass
@@ -314,12 +330,13 @@ class Gaste:
     # TODO nu e metoda a clasei
     # TODO vezi ca depinde de la caz la caz
     def configurari_posibile(tabla_de_joc, configuratie_curenta):
-
-        '''
+        """
         Genereaza toate mutarile posibile pentru jucatorul care controleaza gastele.
-        TODO: Parte din cerinta 5.
-        Rezultatul este un vector de configuratii
-        '''
+
+        :param configuratie_curenta: starea curenta
+
+        :return: vector de configuratii
+        """
 
         vector_config = []  # vector de configuratii
         # gasca e sub forma de numar de nod
@@ -336,13 +353,14 @@ class Gaste:
         return vector_config
 
     # TODO nu e metoda a clasei
-    def estimare_gaste(tabla_de_joc, configuratie_curenta, c):
+    def estimare_gaste(tabla_de_joc, configuratie_curenta):
+        """
+        Functie de estimare in favoarea gastelor.
 
-        '''
-        Una din functiile de estimare. Aceasta functie este in favoarea gastelor.
-        Numara cate gaste inconjoara vulpea.
-        AI-urile pentru gastele se folosesc de aceasta functie de estimare.
-        '''
+        :param configuratie_curenta: starea curenta a jocului
+
+        :return: nr gastelor care inconjoara vulpea
+        """
 
         nr_gaste = 0
 
@@ -355,23 +373,6 @@ class Gaste:
 
     # TODO: ASTEA SUNT COMUNE DIN Jucator
 
-    def returneaza_nod_apasat(self, tabla_de_joc, pozitie_click):
-
-        '''
-        Metoda care primeste tabla de joc si pozitia la care s-a dat click pe ecran
-        si returneaza indexul nodului pe care s-a dat click
-        '''
-
-        index = -1  # returneaza -1 daca nu s-a dat click
-        for i in range(33):
-            nod = tabla_de_joc.noduri[i]
-            if distanta_Euclid(nod.punct_desenat, pozitie_click) <= RAZA_CERC:
-                index = i
-                break
-
-        return index
-
-    
     def incarcare(self, ecran, tabla_de_joc):  # TODO vezi aici daca poti sa o scoti
         pass
 
@@ -416,19 +417,19 @@ class Vulpe:
         return configuratie_curenta
 
     # TODO nici asta nu e functie a clasei
-    def genereaza_posibile_capturi(solutii, tabla_de_joc, configuratie_curenta, crt_solution, ultimul_nod):
+    def genereaza_posibile_capturi(solutii, tabla_de_joc, configuratie_curenta, solutie_actuala, alt_nod):
 
         '''
         functie recursiva returneaza toate posibilitatile de liste
         de noduri care ar putea face parte dintr-o captura pornita din configuratia curenta
         '''
 
-        if crt_solution != []:
-            solutii.append(crt_solution)
+        if solutie_actuala != []:
+            solutii.append(solutie_actuala)
 
         for alt_nod in range(len(tabla_de_joc.noduri)):
-            if verificare_adaugare(crt_solution, tabla_de_joc, configuratie_curenta, alt_nod):
-                solutie_noua = crt_solution.copy()
+            if verificare_adaugare(solutie_actuala, tabla_de_joc, configuratie_curenta, alt_nod):
+                solutie_noua = solutie_actuala.copy()
                 solutie_noua.append(alt_nod)
                 Vulpe.genereaza_posibile_capturi(solutii, tabla_de_joc, configuratie_curenta, solutie_noua, alt_nod)
 
@@ -464,22 +465,6 @@ class Vulpe:
         return len(configuratie_anterioara.gaste) - len(configuratie_curenta.gaste)
 
     # TODO: ASTEA SUNT COMUNE DIN Jucator
-    def returneaza_nod_apasat(self, tabla_de_joc, pozitie_click):
-
-        '''
-        Metoda care primeste tabla de joc si pozitia la care s-a dat click pe ecran
-        si returneaza indexul nodului pe care s-a dat click
-        '''
-
-        index = -1  # returneaza -1 daca nu s-a dat click
-        for i in range(33):
-            nod = tabla_de_joc.noduri[i]
-            if distanta_Euclid(nod.punct_desenat, pozitie_click) <= RAZA_CERC:
-                index = i
-                break
-
-        return index
-
     def incarcare(self, ecran, tabla_de_joc):  # TODO vezi aici daca poti sa o scoti
         pass
     
@@ -706,7 +691,7 @@ class OmGaste(Gaste):
         '''
 
         if mouse_input.eliberat:
-            index_nod = self.returneaza_nod_apasat(tabla_de_joc, pygame.mouse.get_pos())
+            index_nod = returneaza_nod_apasat(tabla_de_joc, pygame.mouse.get_pos())
 
             if index_nod != -1:
 
@@ -809,7 +794,7 @@ class OmVulpe(Vulpe):
         '''
 
         if mouse_input.eliberat:
-            index_nod = self.returneaza_nod_apasat(tabla_de_joc, pygame.mouse.get_pos())
+            index_nod = returneaza_nod_apasat(tabla_de_joc, pygame.mouse.get_pos())
             if index_nod != -1:
                 if len(self.noduri_selectate) == 0:
                     if verificare_adaugare(self.noduri_selectate, tabla_de_joc, configuratie_curenta, index_nod):
