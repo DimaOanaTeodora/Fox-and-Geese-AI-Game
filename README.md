@@ -4,7 +4,7 @@
 [Link joc online](http://www.onlinesologames.com/fox-and-geese)
 
 ##  Meniu cu mai multe butoane
-<img src="https://github.com/DimaOanaTeodora/Homework-2-KR-AI/blob/main/Menu.JPG" width="100" height="100"\>
+<img src="https://github.com/DimaOanaTeodora/Homework-2-KR-AI/blob/main/Menu.JPG" width="100" height="100">
 - Selectare default jucator vs calculator : Gaste vs Calculator Min-Max
 - Utilizatorul poate alege ce algoritm doreste sa foloseasca (Min-Max sau Alpha-Beta)
 - Utilizatorul poate sa aleaga daca joaca de partea vulpii sau a gastelor
