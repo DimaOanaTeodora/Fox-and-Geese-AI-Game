@@ -16,7 +16,10 @@
   - Fiecare nivel corespunde unei adancimi a arborelui calculata prin formula ``` 1 + 2 * dificultate```
 
 ## Tabla de joc
-![Tabla de Joc](https://github.com/DimaOanaTeodora/Homework-2-KR-AI/blob/main/Joc.JPG)
+<p align="center">
+<img src="https://github.com/DimaOanaTeodora/Homework-2-KR-AI/blob/main/Joc.JPG" width="500" height="600">
+</p>
+
 - Interfata grafica PyGame
 ```python
     def desenare_tabla_joc(self, ecran):
@@ -41,7 +44,10 @@
   ```
 
 ## Afisare + debugging in consola
-![Consola](https://github.com/DimaOanaTeodora/Homework-2-KR-AI/blob/main/Consola.JPG)
+<p align="center">
+<img src="https://github.com/DimaOanaTeodora/Homework-2-KR-AI/blob/main/Consola.JPG">
+</p>
+
 - Afisare in consola tabela de joc
 ```python
     def afisare_consola(self, tabla_de_joc):
