@@ -4,7 +4,7 @@
 [Link joc online](http://www.onlinesologames.com/fox-and-geese)
 
 ##  Meniu cu mai multe butoane
-* insert poza here *
+![Meniu](https://github.com/DimaOanaTeodora/Homework-2-KR-AI/blob/main/Menu.JPG)
 - Selectare default jucator vs calculator : Gaste vs Calculator Min-Max
 - Utilizatorul poate alege ce algoritm doreste sa foloseasca (Min-Max sau Alpha-Beta)
 - Utilizatorul poate sa aleaga daca joaca de partea vulpii sau a gastelor
@@ -12,8 +12,8 @@
 - Utilizatorul poate alege din 3 nivele de dificultate
   - Fiecare nivel corespunde unei adancimi a arborelui calculata prin formula ``` 1 + 2 * dificultate```
 
-## Tabela de joc
-* insert poza here *
+## Tabla de joc
+![Tabla de Joc](https://github.com/DimaOanaTeodora/Homework-2-KR-AI/blob/main/Joc.JPG)
 - Interfata grafica PyGame
 ```python
     def desenare_tabla_joc(self, ecran):
@@ -38,6 +38,7 @@
   ```
 
 ## Afisare + debugging in consola
+![Consola](https://github.com/DimaOanaTeodora/Homework-2-KR-AI/blob/main/Consola.JPG)
 - Afisare in consola tabela de joc
 ```python
     def afisare_consola(self, tabla_de_joc):
