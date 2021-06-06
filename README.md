@@ -4,7 +4,9 @@
 [Link joc online](http://www.onlinesologames.com/fox-and-geese)
 
 ##  Meniu cu mai multe butoane
-<img src="https://github.com/DimaOanaTeodora/Homework-2-KR-AI/blob/main/Menu.JPG" width="500" height="500" align="center">
+<p align="center">
+<img src="https://github.com/DimaOanaTeodora/Homework-2-KR-AI/blob/main/Menu.JPG" width="500" height="600">
+</p>
 
 - Selectare default jucator vs calculator : Gaste vs Calculator Min-Max
 - Utilizatorul poate alege ce algoritm doreste sa foloseasca (Min-Max sau Alpha-Beta)
