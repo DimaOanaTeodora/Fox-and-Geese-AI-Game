@@ -3,7 +3,9 @@ import sys
 import pygame
 import pygame_gui
 import time
-
+# TODO de selectat default jucator vs calculator
+# TODO vezi la partea de dificultate daca le las pe amandoua
+# TODO quit pt afisare info
 def distanta_Euclid(punct1, punct2):
     """
     Distanta dintre doua punce de pe ecran.
@@ -26,9 +28,16 @@ def inlocuire_valoare(vector, valoare_de_inlocuit, valoare_noua):
     return vector_nou
 
 def mutare_valida(tabla_de_joc, configuratie_curenta, nr_nod_curent, nr_alt_nod):
-    '''
-    Functie care verifica daca o mutare este valida. # TODO: cerinta 5
-    '''
+    """
+    Functie care verifica daca o mutare este valida.
+
+    :param tabla_de_joc: instanta a clasei TablaDeJoc
+    :param configuratie_curenta: configuratia curenta a joclui
+    :param nr_nod_curent: nr nodului curent in graf ( de unde pleaca muchiile)
+    :param nr_alt_nod: nodul de verificat
+
+    :return: True/False daca mutarea este valida
+    """
     lista_muchii = tabla_de_joc.muchii[nr_nod_curent]
 
     if nr_alt_nod in lista_muchii:
@@ -109,11 +118,17 @@ def returneaza_nod_apasat(tabla_de_joc, pozitie_click):
 
     return index
 
+def transformare_in_adancime(dificultate):
+    """
+    :param dificultate: 0/1/2 care va fi transformata intr-o adancime
+    :return: adancimea parcurgerii folosind formula
+    """
+    return 1 + 2 * dificultate
 
 class MouseInput:
-    '''
-    pygame nu contine un feature pentru apasarea/eliberarea mouse-ului
-    '''
+    """
+    nu-mi recunoaste eventul de click al mouse-ului, asa ca am facut o clasa ajutatoare
+    """
 
     def __init__(self):
         self.apasat = False
@@ -139,7 +154,7 @@ class NodGraf:
     def __init__(self, punct):
         self.punct = punct
 
-        # 70 e distanta dintre noduri
+        # 70px e distanta dintre noduri
         # x-ul este calculat in functie de coordonata y a punctului deoarece este direct proportionala cu
         # distanta de care am nevoie pentru o afisare corecta
         self.punct_desenat = (MARGINI + punct[1] * 70, 2 * MARGINI + punct[0] * 70)
@@ -258,7 +273,7 @@ class ConfiguratieJoc:
         """
         Metoda care returneaza castigatorul ( daca este cazul)
         
-        :param tabla_de_joc: instanta a clasei TablDeJoc
+        :param tabla_de_joc: instanta a clasei TablaDeJoc
         :return: sir de caractere cu castigatorul/ lipsa acestuia
         """
         # calculez miscarile posibile ale vulpii
@@ -351,11 +366,12 @@ class Gaste:
         return vector_config
 
     # TODO nu e metoda a clasei
-    def estimare_gaste(tabla_de_joc, configuratie_curenta):
+    def estimare_gaste(tabla_de_joc, configuratie_curenta, dummy):
         """
         Functie de estimare in favoarea gastelor.
 
         :param configuratie_curenta: starea curenta a jocului
+        :param dummy: parametru in plus pus doar pt apel pentru ca este o functie transmisa ca parametru
 
         :return: nr gastelor care inconjoara vulpea
         """
@@ -383,8 +399,6 @@ class Vulpe:
     def __init__(self):
         self.noduri_selectate = [] # nodurile selectate pentru a face mai multe capturi
 
-    # TODO nici asta nu e functie a clasei
-    # TODO asta nu stiu ce face exact
     def configuratie_noua_dupa_mutare(noduri_selectate, tabla_de_joc, configuratie_curenta):
         """
         Primeste lista cu succesiunea de noduri prin care face captura
@@ -416,7 +430,7 @@ class Vulpe:
     def genereaza_posibile_capturi(solutii, tabla_de_joc, configuratie_curenta, solutie_actuala):# TODO: adauga explicatii si aici
         """
         Recrusivitate
-        Clculeaza toate posibilitatile de liste
+        Calculeaza toate posibilitatile de liste
         de noduri care ar putea face parte dintr-o captura pornita din configuratia curenta
         Se vor afla in solutii
 
@@ -436,33 +450,36 @@ class Vulpe:
                 # apel recrusiv
                 Vulpe.genereaza_posibile_capturi(solutii, tabla_de_joc, configuratie_curenta, solutie_noua)
 
-    # TODO nici asta nu e functie a clasei
     def configurari_posibile(tabla_de_joc, configuratie_curenta):
+        """
+        Returneaza toate configuratiile de joc care pot rezulta prin mutarea vulpii din configuratia curenta.
+        TODO: Parte din cerinta 5
+        
+        :param tabla_de_joc: instanta a clasei TablaDeJoc
+        :param configuratie_curenta: configuratia curenta a jocului
+        
+        :return: configuratiile posibile generate
+        """
 
-        '''
-        functie care returneaza toate configuratiile de joc_pornit care pot rezulta prin mutarea jaguarului din
-        configuratia curenta.
-        Parte din cerinta 5.
-        '''
+        possible_noduri_selectate = []
 
-        possible_noduri_selectates = []
+        for muchie in tabla_de_joc.muchii[configuratie_curenta.vulpe]:
+            if mutare_valida(tabla_de_joc, configuratie_curenta, configuratie_curenta.vulpe, muchie):
+                possible_noduri_selectate.append([muchie])
 
-        for other in tabla_de_joc.muchii[configuratie_curenta.vulpe]:
-            if mutare_valida(tabla_de_joc, configuratie_curenta, configuratie_curenta.vulpe, other):
-                possible_noduri_selectates.append([other])
-
-        Vulpe.genereaza_posibile_capturi(possible_noduri_selectates, tabla_de_joc, configuratie_curenta, [])
+        Vulpe.genereaza_posibile_capturi(possible_noduri_selectate, tabla_de_joc, configuratie_curenta, [])
 
         configuratii_posibile = [
             Vulpe.configuratie_noua_dupa_mutare(noduri_selectate, tabla_de_joc, configuratie_curenta)
-            for noduri_selectate in possible_noduri_selectates]
+            for noduri_selectate in possible_noduri_selectate]
 
         return configuratii_posibile
 
     # TODO nici asta nu e functie a clasei
     def estimare_vulpe(tabla_de_joc, configuratie_anterioara, configuratie_curenta):
         """
-         O functie de estimare in favoarea vulpii
+        O functie de estimare in favoarea vulpii
+        
         :param configuratie_anterioara: starea anterioara a jocului
         :param configuratie_curenta: starea actuala a jocului
 
@@ -483,29 +500,20 @@ class Algortimi:
     """
 
     def __init__(self):
-        '''
-        initializam nrer-ul pentru numarul de mutari cu 0
-        '''
+        """
+        Va retine nr total de mutari efectuate
+        """
         self.nr_mutari = 0
 
-    def transformare_in_adancime(dificultate):
-        '''
-        dificultatea este un numar intre 0 si 2, deci noi va trebui sa il
-        transformam intr-o adancime pentru parcurgeri, si facem asta folosind
-        formula urmatoare
-        '''
-        return 1 + (dificultate * 2)
-
-    def min_max(tabla_de_joc, configuratie_initiala, configuratie_curenta, este_maxim, este_vulpe, crt_level,
-                maxim_nivele,
-                functie_cost):
+    def min_max(tabla_de_joc, configuratie_initiala, configuratie_curenta, este_maxim, este_vulpe, nivel_curent, maxim_nivele, functie_cost):
 
         '''
-        algoritmul min_max. Pentru estimare se foloseste functia functie_cost trimisa ca argument.
-        In functie de tipul de jucator (vulpe sau caini) se genereaza configuratii folosind functii diferite.
+        Algoritmul Min-Max
+        TODO: vezi aici la functia cost
+        Pentru estimare se foloseste functia functie_cost trimisa ca argument.
+        In functie de tipul de jucator (vulpe sau gaste) se genereaza configuratii folosind functii diferite.
         '''
 
-        configuratii_posibile = []
         if este_vulpe:
             configuratii_posibile = Vulpe.configurari_posibile(tabla_de_joc, configuratie_curenta)
         else:
@@ -513,18 +521,19 @@ class Algortimi:
 
         algoritmi.nr_mutari = algoritmi.nr_mutari + len(configuratii_posibile)
 
-        if crt_level >= maxim_nivele - 1:
+        if nivel_curent >= maxim_nivele - 1:
             sol = (None, -1)
             for configuratie_noua in configuratii_posibile:
-                # crt_cost = functie_cost(tabla_de_joc, configuratie_initiala, configuratie_noua)
+                # cost_actual = functie_cost(tabla_de_joc, configuratie_initiala, configuratie_noua)
                 #TODO VEZI AICI CU PARAMETRII gastele au 2 vulpea are 3
-                crt_cost = functie_cost(tabla_de_joc, configuratie_initiala)
+
+                cost_actual = functie_cost(tabla_de_joc, configuratie_initiala, configuratie_curenta)
                 if este_maxim:
-                    if crt_cost > sol[1]:
-                        sol = (configuratie_noua, crt_cost)
+                    if cost_actual > sol[1]:
+                        sol = (configuratie_noua, cost_actual)
                 else:
-                    if sol[1] == -1 or crt_cost < sol[1]:
-                        sol = (configuratie_noua, crt_cost)
+                    if sol[1] == -1 or cost_actual < sol[1]:
+                        sol = (configuratie_noua, cost_actual)
 
             if sol[0] != None:
                 return sol
@@ -535,7 +544,7 @@ class Algortimi:
         for configuratie_noua in configuratii_posibile:
             returned_val = Algortimi.min_max(tabla_de_joc, configuratie_initiala, configuratie_noua, not este_maxim,
                                              not este_vulpe,
-                                             crt_level + 1, maxim_nivele, functie_cost)
+                                             nivel_curent + 1, maxim_nivele, functie_cost)
             if returned_val[0] != None:
                 if este_maxim:
                     if result[1] < returned_val[1]:
@@ -549,16 +558,11 @@ class Algortimi:
 
         return (configuratie_curenta, 0)
 
-    def alpha_beta(tabla_de_joc, configuratie_initiala, configuratie_curenta, este_maxim, este_vulpe, crt_level,
-                   maxim_nivele,
-                   functie_cost, alpha, beta):
+    def alpha_beta(tabla_de_joc, configuratie_initiala, configuratie_curenta, este_maxim, este_vulpe, nivel_curent, maxim_nivele, functie_cost, alpha, beta):
+        """
+        Algoritmul alpha-beta.
+        """
 
-        '''
-        Algoritmul alpha-beta. Exact ca min_max, doar ca exista si optimizarea cu numerele
-        alpha si beta.
-        '''
-
-        configuratii_posibile = []
         if este_vulpe:
             configuratii_posibile = Vulpe.configurari_posibile(tabla_de_joc, configuratie_curenta)
         else:
@@ -566,17 +570,16 @@ class Algortimi:
 
         algoritmi.nr_mutari = algoritmi.nr_mutari + len(configuratii_posibile)
 
-        if crt_level >= maxim_nivele - 1:
+        if nivel_curent >= maxim_nivele - 1:
             sol = (None, -1)
             for configuratie_noua in configuratii_posibile:
-                # crt_cost = functie_cost(tabla_de_joc, configuratie_initiala, configuratie_noua)
-                crt_cost = functie_cost(tabla_de_joc, configuratie_initiala)
+                cost_actual = functie_cost(tabla_de_joc, configuratie_initiala, configuratie_noua)
                 if este_maxim:
-                    if crt_cost > sol[1]:
-                        sol = (configuratie_noua, crt_cost)
+                    if cost_actual > sol[1]:
+                        sol = (configuratie_noua, cost_actual)
                 else:
-                    if sol[1] == -1 or crt_cost < sol[1]:
-                        sol = (configuratie_noua, crt_cost)
+                    if sol[1] == -1 or cost_actual < sol[1]:
+                        sol = (configuratie_noua, cost_actual)
             if sol[0] != None:
                 return sol
             return (configuratie_curenta, 0)
@@ -587,7 +590,7 @@ class Algortimi:
             for configuratie_noua in configuratii_posibile:
                 returned_val = Algortimi.alpha_beta(tabla_de_joc, configuratie_initiala, configuratie_noua,
                                                     not este_maxim,
-                                                    not este_vulpe, crt_level + 1, maxim_nivele, functie_cost, alpha,
+                                                    not este_vulpe, nivel_curent + 1, maxim_nivele, functie_cost, alpha,
                                                     beta)
 
                 if returned_val[0] != None:
@@ -605,7 +608,7 @@ class Algortimi:
             for configuratie_noua in configuratii_posibile:
                 returned_val = Algortimi.alpha_beta(tabla_de_joc, configuratie_initiala, configuratie_noua,
                                                     not este_maxim,
-                                                    not este_vulpe, crt_level + 1, maxim_nivele, functie_cost, alpha,
+                                                    not este_vulpe, nivel_curent + 1, maxim_nivele, functie_cost, alpha,
                                                     beta)
 
                 if returned_val[0] != None:
@@ -735,7 +738,7 @@ class MMVulpe(Vulpe):
         """
         algoritmi.nr_mutari = 0
         result = Algortimi.min_max(tabla_de_joc, configuratie_curenta, configuratie_curenta, True, True, 0,
-                                   Algortimi.transformare_in_adancime(self.dificultate), Vulpe.estimare_vulpe)
+                                   transformare_in_adancime(self.dificultate), Vulpe.estimare_vulpe)
         
         print("Estimare: " + str(result[1]))
         print("Noduri Generate: " + str(algoritmi.nr_mutari))
@@ -763,7 +766,7 @@ class ABVulpe(Vulpe):
         """
         algoritmi.nr_mutari = 0
         result = Algortimi.alpha_beta(tabla_de_joc, configuratie_curenta, configuratie_curenta, True, True, 0,
-                                      Algortimi.transformare_in_adancime(self.dificultate), Vulpe.estimare_vulpe,
+                                      transformare_in_adancime(self.dificultate), Vulpe.estimare_vulpe,
                                       -sys.maxsize, sys.maxsize)
         print("Estimare: " + str(result[1]))
         print("Noduri Generate: " + str(algoritmi.nr_mutari))
@@ -790,7 +793,7 @@ class MMGaste(Gaste):
         algoritmi.nr_mutari = 0
 
         result = Algortimi.min_max(tabla_de_joc, configuratie_curenta, configuratie_curenta, True, False, 0,
-                                   Algortimi.transformare_in_adancime(self.dificultate), Gaste.estimare_gaste)
+                                   transformare_in_adancime(self.dificultate), Gaste.estimare_gaste)
 
         print("Estimare: " + str(result[1]))
         print("Noduri Generate: " + str(algoritmi.nr_mutari))
@@ -817,7 +820,7 @@ class ABGaste(Gaste):
         """
         algoritmi.nr_mutari = 0
         result = Algortimi.alpha_beta(tabla_de_joc, configuratie_curenta, configuratie_curenta, True, False, 0,
-                                      Algortimi.transformare_in_adancime(self.dificultate), Gaste.estimare_gaste,
+                                      transformare_in_adancime(self.dificultate), Gaste.estimare_gaste,
                                       -sys.maxsize, sys.maxsize)
         print("Estimare: " + str(result[1]))
         print("Noduri Generate: " + str(algoritmi.nr_mutari))
@@ -1108,7 +1111,7 @@ class Joc:
         if self.joc_pornit == 1:  # este in timpul jocului (tabla de joc)
 
             castigator_curent = self.configuratie_curenta.gaseste_castigator(self.tabla_de_joc)
-            mouse_input.update() 
+            mouse_input.update()
 
             if castigator_curent == "configuratie nefinala" :#and self.jocul_este_pornit: #am jocul deschis
 
@@ -1185,9 +1188,6 @@ class Joc:
                     print("Numar mutari vulpe: " + str(len(self.vulpe_timp_de_gandire)))
 
                     self.timpi_afisare = True
-
-                # if mouse_input.eliberat or (not self.jocul_este_pornit): #TODO ajunge la finalul jocului si vezi ce se intampla
-                #     self.joc_pornit = 0 # ma intorc in meniu
 
     # desenare pygame
     def incarcare_texte(self, ecran):
