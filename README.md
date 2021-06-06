@@ -13,7 +13,7 @@
   - Fiecare nivel corespunde unei adancimi a arborelui calculata prin formula ``` 1 + 2 * dificultate```
 
 ## Tabla de joc
-![Tabla de Joc](https://github.com/DimaOanaTeodora/Homework-2-KR-AI/blob/main/Joc.JPG | width=100)
+![Tabla de Joc](https://github.com/DimaOanaTeodora/Homework-2-KR-AI/blob/main/Joc.JPG|width=100)
 - Interfata grafica PyGame
 ```python
     def desenare_tabla_joc(self, ecran):
