@@ -45,7 +45,7 @@
 
 ## Afisare + debugging in consola
 <p align="center">
-<img src="https://github.com/DimaOanaTeodora/Homework-2-KR-AI/blob/main/Consola.JPG">
+<img src="https://github.com/DimaOanaTeodora/Homework-2-KR-AI/blob/main/Consola.JPG" width="400" height="500">
 </p>
 
 - Afisare in consola tabela de joc
