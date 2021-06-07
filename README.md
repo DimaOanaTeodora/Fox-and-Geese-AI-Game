@@ -8,6 +8,7 @@
 <img src="https://github.com/DimaOanaTeodora/Homework-2-KR-AI/blob/main/Menu.JPG" width="500" height="600">
 </p>
 
+- Posibilitate de selectare a celor 3 optiuni: Om vs Om, Om vs Calculator, Calculator vs Calculator
 - Selectare default jucator vs calculator : Gaste vs Calculator Min-Max
 - Utilizatorul poate alege ce algoritm doreste sa foloseasca (Min-Max sau Alpha-Beta)
 - Utilizatorul poate sa aleaga daca joaca de partea vulpii sau a gastelor
@@ -77,7 +78,7 @@
 - Afișarea estimărilor date si numărului de noduri generate de minimax și alpha-beta ( functiile muta din clase)
 - La final se va afișa numărul minim, maxim, mediu și mediana pentru numarul de noduri generat pentru fiecare mutare
 - Afisarea timpului final de joc (cat a rulat programul) si a numarului total de mutari
-
+- Utilizatorul poate sa opreasca jocul cand vrea si sa afiseze analiza timpilor si a mutarilor in consola folosind tasta ESCAPE care il va intoarce in meniul principal
 
 
 ## Cerinte suplimentare
@@ -134,16 +135,12 @@ def mutare_valida(tabla_de_joc, configuratie_curenta, nr_nod_curent, nr_alt_nod)
 def estimare_gaste(tabla_de_joc, configuratie_curenta, dummy): # in favoarea gastelor
 def estimare_vulpe(tabla_de_joc, configuratie_anterioara, configuratie_curenta): # in favoarea vulpii
 ```
+- Comentarii
+- Explicarea pe scurt a fiecarei functii si a parametrilor: Python DocStrings
 
 
-(5%) La fiecare mutare utilizatorul sa poata si sa opreasca jocul daca vrea,  
- caz in care se vor afisa toate informațiile cerute pentru finalul jocului ( scorul lui si al calculatorului,numărul minim, maxim, mediu și mediana pentru numarul de noduri generat pentru fiecare mutare, timpul final de joc și a numarului total de mutari atat pentru jucator cat si pentru calculator)  
- Punctajul pentru calcularea efectivă a acestor date e cel de mai sus; aici se punctează strict afișarea lor în cazul cerut.
-(5%) Comentarii.  
-Explicarea algoritmului de generare a mutarilor, explicarea estimarii scorului si dovedirea faptului ca ordoneaza starile cu adevarat in functie de cat de prielnice ii sunt lui MAX (nu trebuie demonstratie matematica, doar explicat clar). Explicarea pe scurt a fiecarei functii si a parametrilor.
+Explicarea algoritmului de generare a mutarilor, explicarea estimarii scorului si dovedirea faptului ca ordoneaza starile cu adevarat in functie de cat de prielnice ii sunt lui MAX (nu trebuie demonstratie matematica, doar explicat clar).
 
 Bonus (10%). Ordonarea succesorilor înainte de expandare (bazat pe estimare) astfel încât alpha-beta să taie cât mai mult din arbore.
-Bonus (20%). Opțiuni în meniu (cu butoane adăugate) cu:
-Jucator vs jucător
-Jucător vs calculator (selectată default)
+
 Calculator (cu prima funcție de estimare) vs calculator (cu a doua funcție de estimare)

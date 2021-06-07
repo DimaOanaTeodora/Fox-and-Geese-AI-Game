@@ -4,7 +4,7 @@ import pygame
 import pygame_gui
 import time
 
-# TODO quit pt afisare info
+
 # TODO vezi ce faci cand vulpea nu mai poate face miscari
 
 def distanta_Euclid(punct1, punct2):
@@ -512,7 +512,7 @@ class Algortimi:
         
         :param configuratie_initiala: initial e aceeasi cu configuratia curenta
         :param configuratie_curenta: configuratia curenta
-        :param este_maxim: nivelul este maxim
+        :param este_maxim: este pe nivelul MAX
         :param este_vulpe: jucatorul este vulpe
         :param nivel_curent: adancimea curenta
         :param maxim_nivele: adancimea maxima
@@ -528,16 +528,16 @@ class Algortimi:
         # actualizez nr de noduri generate
         algoritmi.nr_noduri_generate = algoritmi.nr_noduri_generate + len(configuratii_posibile)
 
-        if nivel_curent > maxim_nivele:
+        if nivel_curent > maxim_nivele: # sunt pe ultimul nivel
             sol = (None, -1)
             for configuratie_noua in configuratii_posibile: # iterez prin configuratii
                 
                 estimare = functie_estimare(tabla_de_joc, configuratie_initiala, configuratie_curenta)
                 
-                if este_maxim:
+                if este_maxim: # sunt pe nivelul MAX
                     if estimare > sol[1]:
                         sol = (configuratie_noua, estimare)
-                else:
+                else: # sunt pe nivelul MIN
                     if sol[1] == -1 or estimare < sol[1]:
                         sol = (configuratie_noua, estimare)
 
@@ -552,16 +552,16 @@ class Algortimi:
             valoare_returnata = Algortimi.min_max(tabla_de_joc,
                                              configuratie_initiala,
                                              configuratie_noua,
-                                             not este_maxim,
+                                             not este_maxim, # este pe nivelul MIN
                                              not este_vulpe,
                                              nivel_curent + 1,
                                              maxim_nivele,
                                              functie_estimare)
             if valoare_returnata[0] != None:
-                if este_maxim:
+                if este_maxim: # sunt pe nivelul MAX
                     if solutie[1] < valoare_returnata[1]:
                         solutie = (configuratie_noua, valoare_returnata[1])
-                else:
+                else: # sunt pe nivelul MIN
                     if solutie[1] == -1 or solutie[1] > valoare_returnata[1]:
                         solutie = (configuratie_noua, valoare_returnata[1])
 
@@ -588,7 +588,7 @@ class Algortimi:
 
         :param configuratie_initiala: initial e aceeasi cu configuratia curenta
         :param configuratie_curenta: configuratia curenta
-        :param este_maxim: nivelul este maxim
+        :param este_maxim: este pe nivelul MAX
         :param este_vulpe: jucatorul este vulpe
         :param nivel_curent: adancimea curenta
         :param maxim_nivele: adancimea maxima
@@ -627,7 +627,7 @@ class Algortimi:
                 valoare_returnata = Algortimi.alpha_beta(tabla_de_joc,
                                                          configuratie_initiala,
                                                          configuratie_noua,
-                                                         not este_maxim,
+                                                         not este_maxim, # este pe nivelul MIN
                                                          not este_vulpe,
                                                          nivel_curent + 1,
                                                          maxim_nivele,
@@ -652,7 +652,7 @@ class Algortimi:
                 valoare_returnata = Algortimi.alpha_beta(tabla_de_joc,
                                                          configuratie_initiala,
                                                          configuratie_noua,
-                                                         not este_maxim,
+                                                         not este_maxim, # este pe nivelul MIN
                                                          not este_vulpe,
                                                          nivel_curent + 1,
                                                          maxim_nivele,
@@ -1185,6 +1185,7 @@ class Joc:
                     self.timp_start = time.time()
 
                     self.timpi_afisare = False  # ca sa-mi afiseze timpii la final doar o data
+                    self.joc_in_desfasure = True # ma ajuta la functionalitatea tastei ESCAPE
 
     # apelata la fiecare frame
     def update(self):
@@ -1199,7 +1200,14 @@ class Joc:
             castigator_curent = self.configuratie_curenta.gaseste_castigator(self.tabla_de_joc)
             mouse_input.update()  # verifica daca mouse-ul a fost eliberat
 
-            if castigator_curent == "configuratie nefinala":
+            taste = pygame.key.get_pressed()
+
+            if taste[pygame.K_ESCAPE]:
+                # ma intoarce in meniul principal si afiseaza in consola analiza timpilor si a nodurilor
+                self.joc_in_desfasure = False
+
+            if castigator_curent == "configuratie nefinala" and  self.joc_in_desfasure:
+                # adica sunt in mijlocul jocului
 
                 # calculez urmatoarea mutare
                 configuratie_noua, nr_noduri_generate = self.jucator_curent.muta(self.tabla_de_joc,
@@ -1276,6 +1284,10 @@ class Joc:
                     print("Numar mutari vulpe: " + str(len(self.vulpe_timp_de_gandire)))
 
                     self.timpi_afisare = True
+
+                if not self.joc_in_desfasure: # ma intoarce in meniul principal si afiseaza in consola analiza timpilor si a nodurilor
+                    # se aplica daca a fost efectuata cel putin o mutare in joc
+                    self.joc_pornit = 0
 
     # desenare pygame
     def incarcare_texte(self, ecran):
