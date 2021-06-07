@@ -3,7 +3,6 @@ import sys
 import pygame
 import pygame_gui
 import time
-# TODO de selectat default jucator vs calculator
 # TODO vezi la partea de dificultate daca le las pe amandoua
 # TODO quit pt afisare info
 def distanta_Euclid(punct1, punct2):
@@ -14,10 +13,16 @@ def distanta_Euclid(punct1, punct2):
     return math.sqrt((punct1[0] - punct2[0]) ** 2 + (punct1[1] - punct2[1]) ** 2)
 
 def inlocuire_valoare(vector, valoare_de_inlocuit, valoare_noua):
-    '''
+    """
     Inlocuiesc o valoare veche cu o valoare noua
     O folosesc cand mut o gasca pe tabla.
-    '''
+
+    :param vector: vector in care inlocuiesc
+    :param valoare_de_inlocuit: valoare pe care o inlocuiesc
+    :param valoare_noua: valoarea cu care inlocuiesc
+
+    :return: vectorul modificat
+    """
 
     vector_nou = vector.copy()
 
@@ -48,7 +53,7 @@ def mutare_valida(tabla_de_joc, configuratie_curenta, nr_nod_curent, nr_alt_nod)
 
 def gasca_intre_noduri(tabla_de_joc, nr_nod_initial, nr_nod_scop, nr_nod_gasca):
     """
-    Verifica daca o gasca ( nr_nod_gasca)  se afla in linie dreapta intre nodurile nr_nod_initial si nr_nod_scop
+    Verifica daca o gasca ( nr_nod_gasca) se afla in linie dreapta intre nodurile nr_nod_initial si nr_nod_scop
 
     :param tabla_de_joc: instanta a clasei TablaDeJoc
     :param nr_nod_initial: numarul nodului de plecare
@@ -112,7 +117,7 @@ def returneaza_nod_apasat(tabla_de_joc, pozitie_click):
     index = -1  # returneaza -1 daca nu s-a dat click
     for i in range(33):
         nod = tabla_de_joc.noduri[i]
-        if distanta_Euclid(nod.punct_desenat, pozitie_click) <= RAZA_CERC:
+        if distanta_Euclid(nod.punct_desenat, pozitie_click) <= RAZA_CERC: # sa fie in intervalul cercului (nu fix la intersectie)
             index = i
             break
 
@@ -146,17 +151,16 @@ class MouseInput:
 
 
 class NodGraf:
-    '''
-    retine pozitia unui nod graf (x,y)
-    calculeaza pozitia unui nod pe ecranul desenat
-    '''
+    """
+    Retine pozitia unui nod graf (x,y)
+    Calculeaza pozitia unui nod pe ecranul desenat
+    """
 
     def __init__(self, punct):
         self.punct = punct
 
         # 70px e distanta dintre noduri
-        # x-ul este calculat in functie de coordonata y a punctului deoarece este direct proportionala cu
-        # distanta de care am nevoie pentru o afisare corecta
+        # se calculeaza in functie de y, respectiv x ca sa nu-mi puna tabla invers
         self.punct_desenat = (MARGINI + punct[1] * 70, 2 * MARGINI + punct[0] * 70)
 
 
@@ -503,7 +507,7 @@ class Algortimi:
         """
         Va retine nr total de mutari efectuate
         """
-        self.nr_mutari = 0
+        self.nr_noduri_generate = 0
 
     def min_max(tabla_de_joc, configuratie_initiala, configuratie_curenta, este_maxim, este_vulpe, nivel_curent, maxim_nivele, functie_cost):
 
@@ -519,7 +523,7 @@ class Algortimi:
         else:
             configuratii_posibile = Gaste.configurari_posibile(tabla_de_joc, configuratie_curenta)
 
-        algoritmi.nr_mutari = algoritmi.nr_mutari + len(configuratii_posibile)
+        algoritmi.nr_noduri_generate = algoritmi.nr_noduri_generate + len(configuratii_posibile)
 
         if nivel_curent >= maxim_nivele - 1:
             sol = (None, -1)
@@ -568,7 +572,7 @@ class Algortimi:
         else:
             configuratii_posibile = Gaste.configurari_posibile(tabla_de_joc, configuratie_curenta)
 
-        algoritmi.nr_mutari = algoritmi.nr_mutari + len(configuratii_posibile)
+        algoritmi.nr_noduri_generate = algoritmi.nr_noduri_generate + len(configuratii_posibile)
 
         if nivel_curent >= maxim_nivele - 1:
             sol = (None, -1)
@@ -736,14 +740,14 @@ class MMVulpe(Vulpe):
 
         :return: configuratia noua de joc si nr de mutari
         """
-        algoritmi.nr_mutari = 0
+        algoritmi.nr_noduri_generate = 0
         result = Algortimi.min_max(tabla_de_joc, configuratie_curenta, configuratie_curenta, True, True, 0,
                                    transformare_in_adancime(self.dificultate), Vulpe.estimare_vulpe)
         
         print("Estimare: " + str(result[1]))
-        print("Noduri Generate: " + str(algoritmi.nr_mutari))
+        print("Noduri Generate: " + str(algoritmi.nr_noduri_generate))
         
-        return (result[0], algoritmi.nr_mutari)
+        return (result[0], algoritmi.nr_noduri_generate)
 
 
 
@@ -764,13 +768,19 @@ class ABVulpe(Vulpe):
 
         :return: configuratia noua de joc si nr de mutari
         """
-        algoritmi.nr_mutari = 0
-        result = Algortimi.alpha_beta(tabla_de_joc, configuratie_curenta, configuratie_curenta, True, True, 0,
-                                      transformare_in_adancime(self.dificultate), Vulpe.estimare_vulpe,
-                                      -sys.maxsize, sys.maxsize)
+        algoritmi.nr_noduri_generate = 0
+        result = Algortimi.alpha_beta(tabla_de_joc,
+                                      configuratie_curenta,
+                                      configuratie_curenta,
+                                      True, True, 0,
+                                      transformare_in_adancime(self.dificultate),
+                                      Vulpe.estimare_vulpe,
+                                      -sys.maxsize, #alpha
+                                       sys.maxsize #beta
+                                      )
         print("Estimare: " + str(result[1]))
-        print("Noduri Generate: " + str(algoritmi.nr_mutari))
-        return (result[0], algoritmi.nr_mutari)
+        print("Noduri Generate: " + str(algoritmi.nr_noduri_generate))
+        return (result[0], algoritmi.nr_noduri_generate)
 
 
 class MMGaste(Gaste):
@@ -790,15 +800,15 @@ class MMGaste(Gaste):
 
         :return: configuratia noua de joc si nr de mutari
         """
-        algoritmi.nr_mutari = 0
+        algoritmi.nr_noduri_generate = 0
 
         result = Algortimi.min_max(tabla_de_joc, configuratie_curenta, configuratie_curenta, True, False, 0,
                                    transformare_in_adancime(self.dificultate), Gaste.estimare_gaste)
 
         print("Estimare: " + str(result[1]))
-        print("Noduri Generate: " + str(algoritmi.nr_mutari))
+        print("Noduri Generate: " + str(algoritmi.nr_noduri_generate))
 
-        return (result[0], algoritmi.nr_mutari)
+        return (result[0], algoritmi.nr_noduri_generate)
 
 
 class ABGaste(Gaste):
@@ -818,14 +828,14 @@ class ABGaste(Gaste):
 
         :return:urmatoarea mutare si nr de mutari efectuate
         """
-        algoritmi.nr_mutari = 0
+        algoritmi.nr_noduri_generate = 0
         result = Algortimi.alpha_beta(tabla_de_joc, configuratie_curenta, configuratie_curenta, True, False, 0,
                                       transformare_in_adancime(self.dificultate), Gaste.estimare_gaste,
                                       -sys.maxsize, sys.maxsize)
         print("Estimare: " + str(result[1]))
-        print("Noduri Generate: " + str(algoritmi.nr_mutari))
+        print("Noduri Generate: " + str(algoritmi.nr_noduri_generate))
 
-        return (result[0], algoritmi.nr_mutari)
+        return (result[0], algoritmi.nr_noduri_generate)
 
 
 class Joc:
@@ -839,7 +849,7 @@ class Joc:
         
         # alegerea by default pentru cei 2 jucatori
         self.alegere_gaste = "om"
-        self.alegere_vulpe = "om"
+        self.alegere_vulpe = "mm"
 
         self.gaste_dificultate = 0
         self.vulpe_dificultate = 0
@@ -849,6 +859,12 @@ class Joc:
 
         # apelare functie de realizare a meniuliu
         self.meniu(ui_manager)
+
+        # pentru calculele de la sfarsit
+        self.gaste_timp_de_gandire = []
+        self.vulpe_timp_de_gandire = []
+        self.gaste_noduri_generate = []
+        self.vulpe_noduri_generate = []
 
     # desenare pygame
     def meniu(self, ui_manager):
@@ -951,13 +967,14 @@ class Joc:
 
         # selectare by default
         self.buton_om_gaste.select()
-        self.buton_om_vulpe.select()
+        self.buton_min_max_vulpe.select()
         self.dificultate_gaste_1.select()
         self.dificultate_vulpe_1.select()
 
     def apasare_butoane_meniu(self, eveniment):
         """
         Selecteaza butoanele care au fost apasate prin intermediul evenimentului
+        Initializeaza si jucatorul curent
         
         :param eveniment: evenimentul de input (click)
         """
@@ -1073,6 +1090,7 @@ class Joc:
 
                     self.joc_pornit = 1
 
+                    # instantiere clase in functie de tip
                     if self.alegere_gaste == "om":
                         self.jucator_gasca = OmGaste()
                     elif self.alegere_gaste == "mm":
@@ -1089,43 +1107,39 @@ class Joc:
 
                     self.jucator_curent = self.jucator_gasca # gastele incep primele
 
-                    self.gaste_timp_de_gandire = []
-                    self.vulpe_timp_de_gandire = []
-                    self.gaste_noduri_generate = []
-                    self.vulpe_noduri_generate = []
 
                     self.ultimul_timp_de_gandire = time.time()
                     self.timp_start = time.time()
 
                     self.timpi_afisare = False # ca sa-mi afiseze timpii la final doar o data
 
-                    # self.jocul_este_pornit = True
-
     # apelata la fiecare frame
     def update(self):
         """
         Apelat la fiecare frame 
-        Apel catre functia care decide care va fi urmatoarea mutare => ....muta(..)
+        Genereaza urmatoare configuratie (mutare)
+        Afisare si caclulare timp si nr ndouri
         """
 
         if self.joc_pornit == 1:  # este in timpul jocului (tabla de joc)
 
             castigator_curent = self.configuratie_curenta.gaseste_castigator(self.tabla_de_joc)
-            mouse_input.update()
+            mouse_input.update() # verifica daca mouse-ul a fost eliberat
 
-            if castigator_curent == "configuratie nefinala" :#and self.jocul_este_pornit: #am jocul deschis
+            if castigator_curent == "configuratie nefinala" :
 
                 # calculez urmatoarea mutare
-                configuratie_noua, noduri_generate = self.jucator_curent.muta(self.tabla_de_joc, self.configuratie_curenta)
+                configuratie_noua, nr_noduri_generate = self.jucator_curent.muta(self.tabla_de_joc, self.configuratie_curenta)
 
                 if configuratie_noua != self.configuratie_curenta:
 
-                    current_time = time.time()
-                    diferenta_timp = current_time - self.ultimul_timp_de_gandire
+                    timp_curent = time.time()
+                    diferenta_timp = timp_curent - self.ultimul_timp_de_gandire
                     # actualizez dupa ce am calculat diferenta de timp
-                    self.ultimul_timp_de_gandire = current_time
+                    self.ultimul_timp_de_gandire = timp_curent
 
-                    configuratie_noua.afisare_consola(self.tabla_de_joc) # afisare config curenta in consola
+                    # afisare config curenta in consola
+                    configuratie_noua.afisare_consola(self.tabla_de_joc)
 
                     print("Timpul de gandire: " + str(diferenta_timp))
 
@@ -1134,13 +1148,13 @@ class Joc:
                         self.jucator_curent = self.jucator_vulpe
 
                         self.gaste_timp_de_gandire.append(diferenta_timp)
-                        self.gaste_noduri_generate.append(noduri_generate)
+                        self.gaste_noduri_generate.append(nr_noduri_generate)
 
                     else:
                         self.jucator_curent = self.jucator_gasca
 
                         self.vulpe_timp_de_gandire.append(diferenta_timp)
-                        self.vulpe_noduri_generate.append(noduri_generate)
+                        self.vulpe_noduri_generate.append(nr_noduri_generate)
 
                     self.configuratie_curenta = configuratie_noua # actualizez configuratia
 
@@ -1247,19 +1261,21 @@ def start():
 
             if jocul_propriuzis.joc_pornit == 0:  # nu am apasat butonul de start
                 jocul_propriuzis.apasare_butoane_meniu(eveniment)
-                ui_manager.process_events(
-                    eveniment)  # metoda din pygame care proceseaza eventurile de input si da un raspuns
+                # metoda din pygame care proceseaza eventurile de input si da un raspuns
+                # fara meniul nu raspunde la click-uri
+                ui_manager.process_events(eveniment)
 
         if jocul_propriuzis.joc_pornit == 0:  # nu am apasat butonul de start
             ui_manager.update(t)  # metoda din pygame care proceseaza eventurile de input si da un raspuns
 
-        jocul_propriuzis.update()
-        jocul_propriuzis.incarcare_texte(ecran)
+        jocul_propriuzis.update() # metoda din clasa Joc
+        jocul_propriuzis.incarcare_texte(ecran) # afiseaza randul cui este/ castigatorul
 
         if jocul_propriuzis.joc_pornit == 0:
-            ui_manager.draw_ui(ecran)
+            # fara nu-mi afieaza butoanele
+            ui_manager.draw_ui(ecran) #desenare ecran
 
-        pygame.display.flip()
+        pygame.display.flip() # fara nu-mi afiseaza nimic (ecran negru)
 
     pygame.quit()
 
